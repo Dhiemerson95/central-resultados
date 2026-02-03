@@ -1,12 +1,11 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// O Railway exige SSL para conexões externas. 
+// Esse código verifica se existe uma DATABASE_URL (nuvem) para ativar o SSL.
 const pool = new Pool({
-  host: process.env.DATABASE_HOST,
-  port: process.env.DATABASE_PORT,
-  database: process.env.DATABASE_NAME,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
 pool.on('error', (err) => {
