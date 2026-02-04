@@ -103,6 +103,23 @@ const Navbar = () => {
               ⚙️ Configurações
             </Link>
           )}
+
+          {usuario?.perfil !== 'client' && (
+            <>
+              <Link 
+                to="/logs" 
+                className={`navbar-link ${isActive('/logs') ? 'active' : ''}`}
+              >
+                📊 Logs
+              </Link>
+              <Link 
+                to="/historico-emails" 
+                className={`navbar-link ${isActive('/historico-emails') ? 'active' : ''}`}
+              >
+                📧 E-mails
+              </Link>
+            </>
+          )}
         </div>
       </div>
       <div className="navbar-right">

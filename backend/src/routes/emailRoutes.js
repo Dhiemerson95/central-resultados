@@ -1,5 +1,6 @@
 const express = require('express');
 const { testarConexao } = require('../services/emailService');
+const { listarHistorico, reenviarEmail } = require('../controllers/emailController');
 const authMiddleware = require('../middleware/auth');
 const router = express.Router();
 
@@ -29,5 +30,8 @@ router.get('/testar', async (req, res) => {
     });
   }
 });
+
+router.get('/historico', listarHistorico);
+router.post('/reenviar/:id', reenviarEmail);
 
 module.exports = router;

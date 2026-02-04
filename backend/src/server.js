@@ -16,6 +16,7 @@ const permissoesRoutes = require('./routes/permissoesRoutes');
 const anexosRoutes = require('./routes/anexosRoutes');
 const apiExternaRoutes = require('./routes/apiExternaRoutes');
 const exportacaoRoutes = require('./routes/exportacaoRoutes');
+const logsRoutes = require('./routes/logsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -67,6 +68,7 @@ app.use('/api/permissoes', permissoesRoutes);
 app.use('/api/anexos', anexosRoutes);
 app.use('/api/externa', apiExternaRoutes);
 app.use('/api/exportar', exportacaoRoutes);
+app.use('/api/logs', logsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

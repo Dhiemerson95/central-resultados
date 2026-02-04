@@ -12,6 +12,8 @@ import Configuracoes from './pages/Configuracoes';
 import Permissoes from './pages/Permissoes';
 import ConfigSMTP from './pages/ConfigSMTP';
 import TrocarSenha from './pages/TrocarSenha';
+import Logs from './pages/Logs';
+import HistoricoEmails from './pages/HistoricoEmails';
 import './App.css';
 
 function AppContent() {
@@ -82,6 +84,22 @@ function AppContent() {
           element={
             <PrivateRoute>
               <TrocarSenha />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/logs"
+          element={
+            <PrivateRoute>
+              <Logs />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/historico-emails"
+          element={
+            <PrivateRoute>
+              <HistoricoEmails />
             </PrivateRoute>
           }
         />
