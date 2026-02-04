@@ -4,7 +4,11 @@ const bcrypt = require('bcryptjs');
 const listarUsuarios = async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, nome, email, perfil, ativo, criado_em, atualizado_em FROM usuarios ORDER BY nome'
+      `SELECT u.id, u.nome, u.email, u.perfil, u.ativo, u.criado_em, u.atualizado_em, u.perfil_id,
+        p.nome as perfil_nome
+       FROM usuarios u
+       LEFT JOIN perfis p ON u.perfil_id = p.id
+       ORDER BY u.nome`
     );
     res.json(result.rows);
   } catch (error) {
@@ -35,7 +39,7 @@ const obterUsuario = async (req, res) => {
 const atualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, email, senha, perfil, ativo } = req.body;
+    const { nome, email, senha, perfil, perfil_id, ativo } = req.body;
 
     if (req.usuario.perfil !== 'admin') {
       return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem atualizar usuários.' });
@@ -66,6 +70,11 @@ const atualizarUsuario = async (req, res) => {
       values.push(perfil);
     }
 
+    if (perfil_id) {
+      updates.push(`perfil_id = $${valueIndex++}`);
+      values.push(perfil_id);
+    }
+
     if (typeof ativo === 'boolean') {
       updates.push(`ativo = $${valueIndex++}`);
       values.push(ativo);
@@ -74,7 +83,7 @@ const atualizarUsuario = async (req, res) => {
     updates.push(`atualizado_em = CURRENT_TIMESTAMP`);
     values.push(id);
 
-    const query = `UPDATE usuarios SET ${updates.join(', ')} WHERE id = $${valueIndex} RETURNING id, nome, email, perfil, ativo`;
+    const query = `UPDATE usuarios SET ${updates.join(', ')} WHERE id = $${valueIndex} RETURNING id, nome, email, perfil, perfil_id, ativo`;
     const result = await db.query(query, values);
 
     if (result.rows.length === 0) {

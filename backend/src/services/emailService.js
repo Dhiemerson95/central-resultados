@@ -1,6 +1,24 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
+const db = require('../database/db');
+
+const obterConfiguracoesEmail = async () => {
+  try {
+    const result = await db.query(
+      'SELECT smtp_host, smtp_port, smtp_usuario, smtp_senha, smtp_secure FROM configuracoes_sistema ORDER BY id DESC LIMIT 1'
+    );
+
+    if (result.rows.length === 0 || !result.rows[0].smtp_host) {
+      return null;
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    console.error('Erro ao obter configurações de e-mail:', error);
+    return null;
+  }
+};
 
 const verificarConfiguracao = () => {
   const camposObrigatorios = {
@@ -23,7 +41,24 @@ const verificarConfiguracao = () => {
   return true;
 };
 
-const criarTransporter = () => {
+const criarTransporter = async () => {
+  const configDB = await obterConfiguracoesEmail();
+  
+  if (configDB) {
+    return nodemailer.createTransport({
+      host: configDB.smtp_host,
+      port: parseInt(configDB.smtp_port),
+      secure: configDB.smtp_secure,
+      auth: {
+        user: configDB.smtp_usuario,
+        pass: configDB.smtp_senha,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+  }
+
   if (!verificarConfiguracao()) {
     return null;
   }
@@ -71,10 +106,10 @@ const enviarEmail = async ({ destinatario, assunto, corpo, anexos = [] }) => {
       };
     }
 
-    const transporter = criarTransporter();
+    const transporter = await criarTransporter();
     
     if (!transporter) {
-      const erro = 'Configurações SMTP não encontradas. Verifique o arquivo .env';
+      const erro = 'Configurações SMTP não encontradas. Configure nas Configurações do Sistema.';
       console.error('❌', erro);
       return { 
         sucesso: false, 
@@ -89,7 +124,7 @@ const enviarEmail = async ({ destinatario, assunto, corpo, anexos = [] }) => {
     const anexosValidos = validarAnexos(anexos);
 
     const mailOptions = {
-      from: `"${process.env.EMAIL_FROM_NAME || 'Sistema'}" <${process.env.EMAIL_FROM}>`,
+      from: `"${process.env.EMAIL_FROM_NAME || 'Sistema'}" <${process.env.EMAIL_FROM || 'noreply@sistema.com'}>`,
       to: destinatario,
       subject: assunto,
       html: corpo,
@@ -143,7 +178,7 @@ const enviarEmail = async ({ destinatario, assunto, corpo, anexos = [] }) => {
 
 const testarConexao = async () => {
   try {
-    const transporter = criarTransporter();
+    const transporter = await criarTransporter();
     
     if (!transporter) {
       return { sucesso: false, erro: 'Configurações SMTP não encontradas' };

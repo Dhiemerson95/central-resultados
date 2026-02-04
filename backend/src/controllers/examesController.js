@@ -246,16 +246,26 @@ const deletarExame = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await db.query('DELETE FROM exames WHERE id = $1 RETURNING *', [id]);
-
-    if (result.rows.length === 0) {
+    const exameResult = await db.query('SELECT * FROM exames WHERE id = $1', [id]);
+    
+    if (exameResult.rows.length === 0) {
       return res.status(404).json({ error: 'Exame não encontrado' });
     }
+
+    await db.query('DELETE FROM historico_emails WHERE exame_id = $1', [id]);
+    
+    const result = await db.query('DELETE FROM exames WHERE id = $1 RETURNING *', [id]);
 
     res.json({ mensagem: 'Exame deletado com sucesso' });
   } catch (error) {
     console.error('Erro ao deletar exame:', error);
-    res.status(500).json({ error: 'Erro ao deletar exame' });
+    console.error('Código do erro:', error.code);
+    console.error('Detalhes:', error.detail);
+    res.status(500).json({ 
+      error: 'Erro ao deletar exame',
+      detalhes: error.message,
+      codigo: error.code
+    });
   }
 };
 

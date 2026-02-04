@@ -10,11 +10,24 @@ const clinicasRoutes = require('./routes/clinicasRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const configuracoesRoutes = require('./routes/configuracoesRoutes');
+const permissoesRoutes = require('./routes/permissoesRoutes');
+const anexosRoutes = require('./routes/anexosRoutes');
+const apiExternaRoutes = require('./routes/apiExternaRoutes');
+const exportacaoRoutes = require('./routes/exportacaoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://resultados.astassessoria.com.br'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,6 +40,10 @@ app.use('/api/clinicas', clinicasRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/configuracoes', configuracoesRoutes);
+app.use('/api/permissoes', permissoesRoutes);
+app.use('/api/anexos', anexosRoutes);
+app.use('/api/externa', apiExternaRoutes);
+app.use('/api/exportar', exportacaoRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
