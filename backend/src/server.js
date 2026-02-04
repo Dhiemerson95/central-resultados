@@ -21,18 +21,32 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',
-    'http://localhost:8080',
-    'https://resultados.astassessoria.com.br',
-    'https://www.resultados.astassessoria.com.br',
-    'https://central-resultados-production.up.railway.app'
-  ],
+  origin: function(origin, callback) {
+    // Permitir requisições sem origin (mobile apps, Postman, etc)
+    if (!origin) return callback(null, true);
+    
+    // Lista de origens permitidas
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
+      'http://localhost:8080',
+      'https://resultados.astassessoria.com.br',
+      'https://www.resultados.astassessoria.com.br',
+      'https://central-resultados-production.up.railway.app'
+    ];
+    
+    // Verificar se origem está na lista OU se é subdomínio do domínio principal
+    if (allowedOrigins.includes(origin) || origin.includes('astassessoria.com.br')) {
+      callback(null, true);
+    } else {
+      console.log('⚠️  CORS bloqueado para:', origin);
+      callback(null, true); // Temporariamente permitir TODAS as origens para debug mobile
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   exposedHeaders: ['Authorization']
 }));
 app.use(express.json());

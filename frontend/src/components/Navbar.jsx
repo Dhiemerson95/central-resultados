@@ -112,6 +112,9 @@ const Navbar = () => {
             ({usuario?.perfil?.toUpperCase()})
           </span>
         </span>
+        <Link to="/trocar-senha" className="btn btn-secondary btn-small">
+          🔑 Trocar Senha
+        </Link>
         <button className="btn btn-secondary btn-small" onClick={logout}>
           Sair
         </button>

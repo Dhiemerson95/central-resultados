@@ -122,4 +122,68 @@ const resetarSenhaEmergencial = async (req, res) => {
   }
 };
 
-module.exports = { login, criarUsuario, resetarSenhaEmergencial };
+// Trocar senha própria (usuário logado)
+const trocarSenhaPropria = async (req, res) => {
+  try {
+    const usuario_id = req.user.id; // Vem do authMiddleware
+    const { senhaAtual, novaSenha } = req.body;
+
+    console.log('🔑 Troca de senha própria:');
+    console.log('   Usuário ID:', usuario_id);
+    console.log('   User-Agent:', req.headers['user-agent']);
+
+    // Validações
+    if (!senhaAtual || !novaSenha) {
+      return res.status(400).json({ error: 'Senha atual e nova senha são obrigatórias' });
+    }
+
+    if (novaSenha.length < 6) {
+      return res.status(400).json({ error: 'Nova senha deve ter no mínimo 6 caracteres' });
+    }
+
+    if (senhaAtual === novaSenha) {
+      return res.status(400).json({ error: 'Nova senha deve ser diferente da atual' });
+    }
+
+    // Buscar usuário
+    const result = await db.query(
+      'SELECT * FROM usuarios WHERE id = $1',
+      [usuario_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const usuario = result.rows[0];
+
+    // Verificar senha atual
+    const senhaValida = await bcrypt.compare(senhaAtual, usuario.senha);
+    
+    if (!senhaValida) {
+      console.log('❌ Senha atual incorreta');
+      return res.status(401).json({ error: 'Senha atual incorreta' });
+    }
+
+    // Gerar hash da nova senha
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
+
+    // Atualizar senha
+    await db.query(
+      'UPDATE usuarios SET senha = $1 WHERE id = $2',
+      [novaSenhaHash, usuario_id]
+    );
+
+    console.log('✅ Senha alterada com sucesso para usuário:', usuario.nome);
+
+    res.json({ 
+      sucesso: true, 
+      mensagem: 'Senha alterada com sucesso'
+    });
+  } catch (error) {
+    console.error('❌ Erro ao trocar senha:', error);
+    res.status(500).json({ error: 'Erro ao alterar senha' });
+  }
+};
+
+module.exports = { login, criarUsuario, resetarSenhaEmergencial, trocarSenhaPropria };

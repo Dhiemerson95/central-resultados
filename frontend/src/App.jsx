@@ -11,6 +11,7 @@ import Usuarios from './pages/Usuarios';
 import Configuracoes from './pages/Configuracoes';
 import Permissoes from './pages/Permissoes';
 import ConfigSMTP from './pages/ConfigSMTP';
+import TrocarSenha from './pages/TrocarSenha';
 import './App.css';
 
 function AppContent() {
@@ -73,6 +74,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <ConfigSMTP />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/trocar-senha"
+          element={
+            <PrivateRoute>
+              <TrocarSenha />
             </PrivateRoute>
           }
         />
