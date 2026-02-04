@@ -27,7 +27,7 @@ const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           {preferencias.logo && (
             <img 
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${preferencias.logo}`}
+              src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`}
               alt="Logo"
               className="navbar-logo"
               style={{ 

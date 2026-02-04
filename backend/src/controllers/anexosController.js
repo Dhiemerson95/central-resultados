@@ -80,6 +80,26 @@ const marcarAnexoOficial = async (req, res) => {
   }
 };
 
+const desmarcarAnexoOficial = async (req, res) => {
+  try {
+    const { anexo_id } = req.params;
+
+    const result = await db.query(
+      'UPDATE exames_anexos SET oficial = false WHERE id = $1 RETURNING *',
+      [anexo_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Anexo não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao desmarcar anexo como oficial:', error);
+    res.status(500).json({ error: 'Erro ao desmarcar anexo como oficial' });
+  }
+};
+
 const deletarAnexoExame = async (req, res) => {
   try {
     const { anexo_id } = req.params;
@@ -149,6 +169,7 @@ module.exports = {
   listarAnexosExame,
   adicionarAnexoExame,
   marcarAnexoOficial,
+  desmarcarAnexoOficial,
   deletarAnexoExame,
   liberarExameParaCliente,
   listarExamesPendentesRevisao

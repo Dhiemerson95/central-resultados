@@ -376,7 +376,7 @@ const Exames = () => {
       return;
     }
 
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const url = `${baseURL}/uploads/${exame.arquivo_laudo}`;
     setLaudoUrl(url);
     setShowLaudoModal(true);

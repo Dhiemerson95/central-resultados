@@ -61,6 +61,16 @@ export default function ModalAnexos({ exameId, onClose }) {
     }
   };
 
+  const handleDesmarcarOficial = async (anexoId) => {
+    try {
+      await api.delete(`/anexos/anexos/${anexoId}/oficial`);
+      await carregarAnexos();
+    } catch (error) {
+      setErro('Erro ao desmarcar anexo como oficial');
+      console.error(error);
+    }
+  };
+
   const handleExcluir = async (anexoId) => {
     if (!confirm('Deseja realmente excluir este anexo?')) return;
 
@@ -74,14 +84,14 @@ export default function ModalAnexos({ exameId, onClose }) {
   };
 
   const handleVisualizar = (anexo) => {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const url = `${baseUrl}/uploads/${anexo.caminho_arquivo}`;
     console.log('📄 Abrindo PDF:', url);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleBaixar = (anexo) => {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const url = `${baseUrl}/uploads/${anexo.caminho_arquivo}`;
     const a = document.createElement('a');
     a.href = url;
@@ -134,6 +144,7 @@ export default function ModalAnexos({ exameId, onClose }) {
                   <th>ID</th>
                   <th>Arquivo</th>
                   <th>Data Upload</th>
+                  <th>Usuário</th>
                   <th>Status</th>
                   <th>Ações</th>
                 </tr>
@@ -143,7 +154,8 @@ export default function ModalAnexos({ exameId, onClose }) {
                   <tr key={anexo.id}>
                     <td>#{anexo.id}</td>
                     <td>{anexo.nome_arquivo}</td>
-                    <td>{new Date(anexo.data_upload).toLocaleString('pt-BR')}</td>
+                    <td>{anexo.criado_em ? new Date(anexo.criado_em).toLocaleString('pt-BR') : 'N/A'}</td>
+                    <td>{anexo.enviado_por_nome || 'N/A'}</td>
                     <td>
                       {anexo.oficial ? (
                         <span className="badge badge-success">✓ OFICIAL</span>
@@ -167,13 +179,21 @@ export default function ModalAnexos({ exameId, onClose }) {
                         >
                           ⬇️
                         </button>
-                        {!anexo.oficial && (
+                        {!anexo.oficial ? (
                           <button
                             onClick={() => handleMarcarOficial(anexo.id)}
                             className="btn btn-small btn-success"
                             title="Marcar como Oficial"
                           >
                             ✓
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleDesmarcarOficial(anexo.id)}
+                            className="btn btn-small btn-warning"
+                            title="Desmarcar Oficial"
+                          >
+                            ✗
                           </button>
                         )}
                         <button

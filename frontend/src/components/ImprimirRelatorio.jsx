@@ -202,7 +202,7 @@ const ImprimirRelatorio = ({ dados, tipo }) => {
       </head>
       <body>
         <div class="header">
-          ${preferencias.logo ? `<img src="${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${preferencias.logo}" alt="Logo" class="logo">` : ''}
+          ${preferencias.logo ? `<img src="${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}" alt="Logo" class="logo">` : ''}
           <h1>AST Assessoria - Central de Resultados</h1>
           <p>Relatório de ${tipo === 'exames' ? 'Exames' : tipo === 'empresas' ? 'Empresas' : 'Clínicas'}</p>
         </div>
