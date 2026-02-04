@@ -207,6 +207,14 @@ const executarMigrations = async () => {
         ) THEN
           ALTER TABLE configuracoes_sistema ADD COLUMN fonte_tamanho INTEGER DEFAULT 8;
         END IF;
+
+        -- Adicionar coluna cliente_id em exames para isolamento
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames' AND column_name = 'cliente_id'
+        ) THEN
+          ALTER TABLE exames ADD COLUMN cliente_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL;
+        END IF;
       END $$;
     `);
 
@@ -235,6 +243,7 @@ const executarMigrations = async () => {
         ('deletar_usuarios', 'Deletar usuários', 'usuarios', 'deletar'),
         ('ver_configuracoes', 'Visualizar configurações do sistema', 'configuracoes', 'ver'),
         ('editar_configuracoes', 'Editar configurações do sistema', 'configuracoes', 'editar'),
+        ('alterar_logo', 'Alterar logo do sistema', 'configuracoes', 'alterar_logo'),
         ('exportar_dados', 'Exportar dados para Excel', 'relatorios', 'exportar')
       ON CONFLICT (nome) DO NOTHING;
     `);

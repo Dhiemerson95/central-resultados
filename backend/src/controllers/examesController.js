@@ -16,6 +16,9 @@ const listarExames = async (req, res) => {
       busca
     } = req.query;
 
+    // Pegar perfil e ID do usuário logado
+    const usuarioLogado = req.user;
+
     let query = `
       SELECT 
         e.*,
@@ -28,6 +31,13 @@ const listarExames = async (req, res) => {
     `;
     const params = [];
     let paramCount = 1;
+
+    // FILTRO DE ISOLAMENTO: Cliente só vê seus próprios exames
+    if (usuarioLogado.perfil === 'client') {
+      query += ` AND e.cliente_id = $${paramCount}`;
+      params.push(usuarioLogado.id);
+      paramCount++;
+    }
 
     if (!data_inicio && !data_fim && !busca) {
       const hoje = new Date().toISOString().split('T')[0];

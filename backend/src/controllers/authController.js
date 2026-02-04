@@ -9,6 +9,8 @@ const login = async (req, res) => {
     console.log('🔐 Tentativa de login:');
     console.log('   E-mail:', email);
     console.log('   Senha fornecida:', senha ? '***' : '(vazia)');
+    console.log('   User-Agent:', req.headers['user-agent']);
+    console.log('   Origin:', req.headers.origin);
 
     const result = await db.query(
       'SELECT * FROM usuarios WHERE email = $1 AND ativo = true',
@@ -32,13 +34,17 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
+    const jwtSecret = process.env.JWT_SECRET || 'chave-temporaria-segura';
+    console.log('   JWT_SECRET configurado:', jwtSecret ? 'SIM' : 'NÃO');
+
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
-      process.env.JWT_SECRET || 'chave-temporaria-segura',
+      jwtSecret,
       { expiresIn: '8h' }
     );
 
     console.log('✅ Login bem-sucedido');
+    console.log('   Token gerado:', token.substring(0, 30) + '...');
 
     res.json({
       token,
