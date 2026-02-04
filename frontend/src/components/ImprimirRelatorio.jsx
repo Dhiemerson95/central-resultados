@@ -1,6 +1,6 @@
 import { usePreferencias } from '../contexts/PreferenciasContext';
 
-const ImprimirRelatorio = ({ dados, tipo }) => {
+const ImprimirRelatorio = ({ dados, tipo, filtros }) => {
   const { preferencias } = usePreferencias();
 
   const gerarHTML = () => {
@@ -11,6 +11,20 @@ const ImprimirRelatorio = ({ dados, tipo }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+
+    // Gerar texto do período filtrado
+    let periodoTexto = 'Todos os registros';
+    if (filtros?.dataInicio && filtros?.dataFim) {
+      const dataIni = new Date(filtros.dataInicio + 'T00:00:00').toLocaleDateString('pt-BR');
+      const dataFim = new Date(filtros.dataFim + 'T00:00:00').toLocaleDateString('pt-BR');
+      periodoTexto = `${dataIni} a ${dataFim}`;
+    } else if (filtros?.dataInicio) {
+      const dataIni = new Date(filtros.dataInicio + 'T00:00:00').toLocaleDateString('pt-BR');
+      periodoTexto = `A partir de ${dataIni}`;
+    } else if (filtros?.dataFim) {
+      const dataFim = new Date(filtros.dataFim + 'T00:00:00').toLocaleDateString('pt-BR');
+      periodoTexto = `Até ${dataFim}`;
+    }
 
     let conteudo = '';
 
@@ -208,6 +222,7 @@ const ImprimirRelatorio = ({ dados, tipo }) => {
         </div>
 
         <div class="info-relatorio">
+          <p><strong>Período:</strong> ${periodoTexto}</p>
           <p><strong>Data de Emissão:</strong> ${dataAtual}</p>
           <p><strong>Total de Registros:</strong> ${dados.length}</p>
         </div>

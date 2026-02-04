@@ -193,6 +193,20 @@ const executarMigrations = async () => {
         ) THEN
           ALTER TABLE configuracoes_sistema ADD COLUMN cor_perigo VARCHAR(7) DEFAULT '#e74c3c';
         END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'configuracoes_sistema' AND column_name = 'fonte_familia'
+        ) THEN
+          ALTER TABLE configuracoes_sistema ADD COLUMN fonte_familia VARCHAR(50) DEFAULT 'Arial';
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'configuracoes_sistema' AND column_name = 'fonte_tamanho'
+        ) THEN
+          ALTER TABLE configuracoes_sistema ADD COLUMN fonte_tamanho INTEGER DEFAULT 8;
+        END IF;
       END $$;
     `);
 

@@ -418,7 +418,14 @@ const Exames = () => {
               <button className="btn btn-info" onClick={exportarParaExcel}>
                 📊 Exportar Excel
               </button>
-              <ImprimirRelatorio dados={exames} tipo="exames" />
+              <ImprimirRelatorio 
+                dados={exames} 
+                tipo="exames" 
+                filtros={{
+                  dataInicio: filtros.data_inicio,
+                  dataFim: filtros.data_fim
+                }}
+              />
               <button className="btn btn-success" onClick={() => abrirModal()}>
                 + Novo Exame
               </button>
