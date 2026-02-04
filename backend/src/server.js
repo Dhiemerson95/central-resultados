@@ -22,6 +22,21 @@ const diagnosticoRoutes = require('./routes/diagnosticoRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Log de inicialização do Cloudinary
+console.log('🔍 Verificando configuração Cloudinary...');
+console.log('   CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Configurado' : '❌ NÃO configurado');
+console.log('   CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ Configurado' : '❌ NÃO configurado');
+console.log('   CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ Configurado' : '❌ NÃO configurado');
+
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  console.log('☁️  Cloudinary ATIVO! Uploads irão para a nuvem.');
+  console.log('   Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+} else {
+  console.log('⚠️  Cloudinary DESATIVADO. Uploads irão para storage local (efêmero).');
+}
+
+console.log('---');
+
 app.use(cors({
   origin: function(origin, callback) {
     // Permitir requisições sem origin (mobile apps, Postman, etc)
