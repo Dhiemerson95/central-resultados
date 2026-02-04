@@ -6,27 +6,39 @@ const login = async (req, res) => {
   try {
     const { email, senha } = req.body;
 
+    console.log('🔐 Tentativa de login:');
+    console.log('   E-mail:', email);
+    console.log('   Senha fornecida:', senha ? '***' : '(vazia)');
+
     const result = await db.query(
       'SELECT * FROM usuarios WHERE email = $1 AND ativo = true',
       [email]
     );
 
     if (result.rows.length === 0) {
+      console.log('❌ Usuário não encontrado ou inativo');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
     const usuario = result.rows[0];
+    console.log('✅ Usuário encontrado:', usuario.nome);
+    console.log('   Hash no banco:', usuario.senha.substring(0, 20) + '...');
+
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    console.log('   Senha válida:', senhaValida);
 
     if (!senhaValida) {
+      console.log('❌ Senha incorreta');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'chave-temporaria-segura',
       { expiresIn: '8h' }
     );
+
+    console.log('✅ Login bem-sucedido');
 
     res.json({
       token,
@@ -38,7 +50,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erro no login:', error);
+    console.error('❌ Erro no login:', error);
     res.status(500).json({ error: 'Erro ao fazer login' });
   }
 };
@@ -64,4 +76,44 @@ const criarUsuario = async (req, res) => {
   }
 };
 
-module.exports = { login, criarUsuario };
+// ENDPOINT TEMPORÁRIO EMERGENCIAL - REMOVER APÓS RESOLVER
+const resetarSenhaEmergencial = async (req, res) => {
+  try {
+    const { email, novaSenha, codigo } = req.body;
+
+    // Código de segurança temporário
+    if (codigo !== 'RESET2024') {
+      return res.status(403).json({ error: 'Código de segurança inválido' });
+    }
+
+    console.log('🚨 RESET EMERGENCIAL DE SENHA');
+    console.log('   E-mail:', email);
+    console.log('   Nova senha:', novaSenha ? '***' : '(vazia)');
+
+    const senhaHash = await bcrypt.hash(novaSenha, 10);
+    console.log('   Hash gerado:', senhaHash.substring(0, 20) + '...');
+
+    const result = await db.query(
+      'UPDATE usuarios SET senha = $1, ativo = true WHERE email = $2 RETURNING id, nome, email',
+      [senhaHash, email]
+    );
+
+    if (result.rows.length === 0) {
+      console.log('❌ Usuário não encontrado');
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    console.log('✅ Senha resetada com sucesso para:', result.rows[0].nome);
+
+    res.json({ 
+      sucesso: true, 
+      mensagem: 'Senha resetada com sucesso',
+      usuario: result.rows[0]
+    });
+  } catch (error) {
+    console.error('❌ Erro ao resetar senha:', error);
+    res.status(500).json({ error: 'Erro ao resetar senha' });
+  }
+};
+
+module.exports = { login, criarUsuario, resetarSenhaEmergencial };
