@@ -1,5 +1,5 @@
 const express = require('express');
-const upload = require('../middleware/upload');
+const upload = require('../middleware/uploadCloudinary');
 const { receberLaudo } = require('../controllers/apiExternaController');
 
 const router = express.Router();

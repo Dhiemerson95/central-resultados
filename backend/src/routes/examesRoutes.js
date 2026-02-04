@@ -10,7 +10,7 @@ const {
   marcarComoEnviado
 } = require('../controllers/examesController');
 const authMiddleware = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const upload = require('../middleware/uploadCloudinary');
 const router = express.Router();
 
 router.use(authMiddleware);

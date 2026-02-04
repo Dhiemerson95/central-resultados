@@ -154,7 +154,7 @@ const criarExame = async (req, res) => {
       codigo_exame_soc
     } = req.body;
 
-    const arquivo_laudo = req.file ? req.file.filename : null;
+    const arquivo_laudo = req.file ? (req.file.path || req.file.filename) : null;
 
     const result = await db.query(
       `INSERT INTO exames (
@@ -207,7 +207,7 @@ const atualizarExame = async (req, res) => {
 
     let arquivo_laudo = req.body.arquivo_laudo;
     if (req.file) {
-      arquivo_laudo = req.file.filename;
+      arquivo_laudo = req.file.path || req.file.filename;
     }
 
     const result = await db.query(

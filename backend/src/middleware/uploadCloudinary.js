@@ -25,6 +25,14 @@ const localStorage = require('./upload');
 // Usar Cloudinary se configurado, senão usar storage local
 const storage = process.env.CLOUDINARY_CLOUD_NAME ? cloudinaryStorage : localStorage.storage;
 
+// Log da configuração
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  console.log('☁️  Cloudinary configurado! Uploads irão para a nuvem.');
+  console.log('   Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+} else {
+  console.log('⚠️  Cloudinary NÃO configurado. Usando storage local (efêmero).');
+}
+
 const upload = multer({ 
   storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB

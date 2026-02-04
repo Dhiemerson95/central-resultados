@@ -37,13 +37,18 @@ const adicionarAnexoExame = async (req, res) => {
     console.log('📎 Upload de anexo:');
     console.log('   Exame ID:', exame_id);
     console.log('   Nome original:', req.file.originalname);
-    console.log('   Nome salvo:', req.file.filename);
-    console.log('   Caminho completo:', req.file.path);
+    console.log('   Arquivo (req.file):', JSON.stringify(req.file, null, 2));
+
+    // Cloudinary retorna 'path' (URL completa)
+    // Storage local retorna 'filename' (nome do arquivo)
+    const caminhoArquivo = req.file.path || `/uploads/${req.file.filename}`;
+    
+    console.log('   Caminho salvo no banco:', caminhoArquivo);
 
     const result = await db.query(
       `INSERT INTO exames_anexos (exame_id, nome_arquivo, caminho_arquivo, enviado_por)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [exame_id, req.file.originalname, req.file.filename, usuario_id]
+      [exame_id, req.file.originalname, caminhoArquivo, usuario_id]
     );
 
     console.log('✅ Anexo salvo com ID:', result.rows[0].id);

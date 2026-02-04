@@ -55,8 +55,9 @@ const atualizarConfiguracoes = async (req, res) => {
 
     let logo = req.body.logo;
     if (req.file) {
-      logo = req.file.filename;
-      console.log('📸 Logo recebida:', req.file.filename);
+      // Cloudinary retorna URL completa em 'path', storage local retorna 'filename'
+      logo = req.file.path || req.file.filename;
+      console.log('📸 Logo recebida:', logo);
     }
 
     const existente = await db.query('SELECT id FROM configuracoes_sistema LIMIT 1');

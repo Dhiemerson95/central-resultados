@@ -29,7 +29,7 @@ const receberLaudo = async (req, res) => {
       return res.status(404).json({ error: 'Clínica não encontrada' });
     }
 
-    const arquivo_laudo = req.file ? req.file.filename : null;
+    const arquivo_laudo = req.file ? (req.file.path || req.file.filename) : null;
 
     const result = await db.query(
       `INSERT INTO exames (
