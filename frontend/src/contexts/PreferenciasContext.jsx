@@ -5,8 +5,8 @@ const PreferenciasContext = createContext({});
 
 export const PreferenciasProvider = ({ children }) => {
   const [preferencias, setPreferencias] = useState({
-    fontFamily: 'Verdana',
-    fontSize: '10pt',
+    fontFamily: 'Arial',
+    fontSize: '8pt',
     tema: 'claro',
     logo: null,
     corPrimaria: '#2c3e50',
@@ -27,6 +27,8 @@ export const PreferenciasProvider = ({ children }) => {
       
       const novasPrefs = {
         ...preferencias,
+        fontFamily: config.fonte_familia || 'Arial',
+        fontSize: config.fonte_tamanho ? `${config.fonte_tamanho}pt` : '8pt',
         logo: config.logo,
         corPrimaria: config.cor_primaria || '#2c3e50',
         corSecundaria: config.cor_secundaria || '#3498db',
