@@ -3,6 +3,8 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+const { executarMigrations } = require('./database/migrations');
+
 const authRoutes = require('./routes/authRoutes');
 const examesRoutes = require('./routes/examesRoutes');
 const empresasRoutes = require('./routes/empresasRoutes');
@@ -54,9 +56,27 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-});
+const iniciarServidor = async () => {
+  try {
+    console.log('🚀 Iniciando servidor...');
+    
+    const resultadoMigrations = await executarMigrations();
+    
+    if (!resultadoMigrations.sucesso) {
+      console.warn('⚠️  Migrations falharam, mas o servidor continuará:', resultadoMigrations.erro);
+    }
+
+    app.listen(PORT, () => {
+      console.log(`✅ Servidor rodando na porta ${PORT}`);
+      console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 CORS habilitado para: https://resultados.astassessoria.com.br`);
+    });
+  } catch (error) {
+    console.error('❌ Erro crítico ao iniciar servidor:', error);
+    process.exit(1);
+  }
+};
+
+iniciarServidor();
 
 module.exports = app;
