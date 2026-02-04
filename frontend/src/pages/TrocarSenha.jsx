@@ -7,6 +7,9 @@ const TrocarSenha = () => {
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false);
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -89,41 +92,101 @@ const TrocarSenha = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Senha Atual *</label>
-            <input
-              type="password"
-              className="form-control"
-              value={senhaAtual}
-              onChange={(e) => setSenhaAtual(e.target.value)}
-              placeholder="Digite sua senha atual"
-              disabled={carregando}
-              autoComplete="current-password"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={mostrarSenhaAtual ? 'text' : 'password'}
+                className="form-control"
+                value={senhaAtual}
+                onChange={(e) => setSenhaAtual(e.target.value)}
+                placeholder="Digite sua senha atual"
+                disabled={carregando}
+                autoComplete="current-password"
+                style={{ paddingRight: '40px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarSenhaAtual(!mostrarSenhaAtual)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  color: '#7f8c8d'
+                }}
+              >
+                {mostrarSenhaAtual ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
             <label>Nova Senha *</label>
-            <input
-              type="password"
-              className="form-control"
-              value={novaSenha}
-              onChange={(e) => setNovaSenha(e.target.value)}
-              placeholder="Digite a nova senha (mín. 6 caracteres)"
-              disabled={carregando}
-              autoComplete="new-password"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={mostrarNovaSenha ? 'text' : 'password'}
+                className="form-control"
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+                placeholder="Digite a nova senha (mín. 6 caracteres)"
+                disabled={carregando}
+                autoComplete="new-password"
+                style={{ paddingRight: '40px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  color: '#7f8c8d'
+                }}
+              >
+                {mostrarNovaSenha ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
             <label>Confirmar Nova Senha *</label>
-            <input
-              type="password"
-              className="form-control"
-              value={confirmarSenha}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
-              placeholder="Digite a nova senha novamente"
-              disabled={carregando}
-              autoComplete="new-password"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={mostrarConfirmar ? 'text' : 'password'}
+                className="form-control"
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+                placeholder="Digite a nova senha novamente"
+                disabled={carregando}
+                autoComplete="new-password"
+                style={{ paddingRight: '40px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarConfirmar(!mostrarConfirmar)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  color: '#7f8c8d'
+                }}
+              >
+                {mostrarConfirmar ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>

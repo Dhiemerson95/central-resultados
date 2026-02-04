@@ -1,11 +1,13 @@
 import { useAuth } from '../contexts/AuthContext';
 import { usePreferencias } from '../contexts/PreferenciasContext';
 import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
 const Navbar = () => {
   const { usuario, logout } = useAuth();
   const { preferencias } = usePreferencias();
   const location = useLocation();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
@@ -21,26 +23,39 @@ const Navbar = () => {
     return permissoes[usuario.perfil]?.includes(recurso) || false;
   };
 
+  const toggleMenu = () => {
+    setMenuAberto(!menuAberto);
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {preferencias.logo && (
-            <img 
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`}
-              alt="Logo"
-              className="navbar-logo"
-              style={{ 
-                height: '80px',
-                width: 'auto',
-                maxWidth: '200px',
-                objectFit: 'contain'
-              }}
-            />
-          )}
-          <h1 style={{ margin: 0 }}>Central de Resultados - AST Assessoria</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            {preferencias.logo && (
+              <img 
+                src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`}
+                alt="Logo"
+                className="navbar-logo"
+                style={{ 
+                  height: '80px',
+                  width: 'auto',
+                  maxWidth: '200px',
+                  objectFit: 'contain'
+                }}
+              />
+            )}
+            <h1 style={{ margin: 0 }}>Central de Resultados - AST Assessoria</h1>
+          </div>
+          <button 
+            className="navbar-toggle" 
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {menuAberto ? '✕' : '☰'}
+          </button>
         </div>
-        <div className="navbar-menu">
+        <div className={`navbar-menu ${menuAberto ? 'navbar-menu-aberto' : ''}`}>
           {podeAcessar('exames') && (
             <Link 
               to="/" 

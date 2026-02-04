@@ -38,6 +38,10 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.navbar-toggle {
+  display: none; /* Esconder no desktop */
+}
+
 .navbar-left {
   display: flex;
   flex-direction: column;
@@ -433,44 +437,76 @@ button:disabled {
   }
 
   .navbar h1 {
-    font-size: 18px;
-    text-align: center;
+    font-size: 14px !important;
+    text-align: left;
+  }
+
+  /* Botão Hambúrguer */
+  .navbar-toggle {
+    display: block !important;
+    background: var(--cor-primaria);
+    color: white;
+    border: none;
+    font-size: 24px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .navbar-toggle:hover {
+    background: var(--cor-secundaria);
+  }
+
+  /* Menu colapsável */
+  .navbar-menu {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .navbar-menu-aberto {
+    display: flex !important;
   }
 
   .navbar-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     width: 100%;
-    margin-top: 10px;
   }
 
   .navbar-link {
-    padding: 12px 8px !important;
-    font-size: 11px !important;
-    text-align: center;
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    padding: 15px !important;
+    font-size: 14px !important;
+    text-align: left;
+    width: 100%;
+    display: block;
+    border-radius: 5px;
   }
 
   .navbar-right {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 8px;
     width: 100%;
-    justify-content: space-between;
   }
 
   .navbar-user {
-    font-size: 11px;
+    font-size: 12px;
+    padding: 8px;
+    background: var(--cor-primaria);
+    color: white;
+    border-radius: 5px;
+    text-align: center;
   }
 
   .btn-small {
-    font-size: 11px !important;
-    padding: 8px 12px !important;
+    font-size: 14px !important;
+    padding: 12px !important;
+    width: 100%;
   }
 
   /* Container */
