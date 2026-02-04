@@ -3,7 +3,8 @@ const {
   listarUsuarios,
   obterUsuario,
   atualizarUsuario,
-  deletarUsuario
+  deletarUsuario,
+  resetarSenhaUsuario
 } = require('../controllers/usuariosController');
 const authMiddleware = require('../middleware/auth');
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get('/', listarUsuarios);
 router.get('/:id', obterUsuario);
 router.put('/:id', atualizarUsuario);
 router.delete('/:id', deletarUsuario);
+router.post('/:id/resetar-senha', resetarSenhaUsuario);
 
 module.exports = router;

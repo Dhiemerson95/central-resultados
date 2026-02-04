@@ -125,9 +125,54 @@ const deletarUsuario = async (req, res) => {
   }
 };
 
+const resetarSenhaUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { novaSenha } = req.body;
+
+    // Verificar permissão (apenas admin)
+    if (req.user.perfil !== 'admin') {
+      return res.status(403).json({ error: 'Apenas administradores podem resetar senhas' });
+    }
+
+    // Validar nova senha
+    if (!novaSenha || novaSenha.length < 6) {
+      return res.status(400).json({ error: 'Nova senha deve ter no mínimo 6 caracteres' });
+    }
+
+    // Verificar se usuário existe
+    const userCheck = await db.query('SELECT nome, email FROM usuarios WHERE id = $1', [id]);
+    
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // Gerar hash da nova senha
+    const senhaCriptografada = await bcrypt.hash(novaSenha, 10);
+
+    // Atualizar senha
+    await db.query(
+      'UPDATE usuarios SET senha = $1 WHERE id = $2',
+      [senhaCriptografada, id]
+    );
+
+    console.log(`✅ Senha resetada por Admin para usuário: ${userCheck.rows[0].nome} (${userCheck.rows[0].email})`);
+
+    res.json({ 
+      sucesso: true, 
+      mensagem: 'Senha resetada com sucesso',
+      usuario: userCheck.rows[0].nome
+    });
+  } catch (error) {
+    console.error('Erro ao resetar senha:', error);
+    res.status(500).json({ error: 'Erro ao resetar senha' });
+  }
+};
+
 module.exports = {
   listarUsuarios,
   obterUsuario,
   atualizarUsuario,
-  deletarUsuario
+  deletarUsuario,
+  resetarSenhaUsuario
 };
