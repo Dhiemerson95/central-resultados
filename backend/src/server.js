@@ -25,7 +25,9 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:8080',
-    'https://resultados.astassessoria.com.br'
+    'https://resultados.astassessoria.com.br',
+    'https://www.resultados.astassessoria.com.br',
+    'https://central-resultados-production.up.railway.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
