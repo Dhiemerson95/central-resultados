@@ -110,6 +110,26 @@ const Clinicas = () => {
     }
   };
 
+  const exportarParaExcel = async () => {
+    try {
+      const response = await api.get('/exportar/clinicas', {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `clinicas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('Erro ao exportar dados para Excel');
+    }
+  };
+
   const getTipoIntegracaoLabel = (tipo) => {
     const labels = {
       'manual': 'Manual',
@@ -139,6 +159,9 @@ const Clinicas = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2>Clínicas Parceiras</h2>
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-info" onClick={exportarParaExcel}>
+                📊 Exportar Excel
+              </button>
               <ImprimirRelatorio dados={clinicas} tipo="clinicas" />
               <button className="btn btn-success" onClick={() => abrirModal()}>
                 + Nova Clínica

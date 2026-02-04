@@ -11,7 +11,7 @@ const Navbar = () => {
     if (!usuario) return false;
 
     const permissoes = {
-      admin: ['exames', 'empresas', 'clinicas', 'usuarios', 'configuracoes'],
+      admin: ['exames', 'empresas', 'clinicas', 'usuarios', 'configuracoes', 'permissoes', 'smtp'],
       operador: ['exames', 'empresas', 'clinicas', 'configuracoes'],
       secretaria: ['exames', 'configuracoes']
     };
@@ -57,6 +57,24 @@ const Navbar = () => {
               className={`navbar-link ${isActive('/usuarios') ? 'active' : ''}`}
             >
               👥 Usuários
+            </Link>
+          )}
+          
+          {podeAcessar('permissoes') && (
+            <Link 
+              to="/permissoes" 
+              className={`navbar-link ${isActive('/permissoes') ? 'active' : ''}`}
+            >
+              🔐 Permissões
+            </Link>
+          )}
+          
+          {podeAcessar('smtp') && (
+            <Link 
+              to="/smtp" 
+              className={`navbar-link ${isActive('/smtp') ? 'active' : ''}`}
+            >
+              📧 Config. SMTP
             </Link>
           )}
           

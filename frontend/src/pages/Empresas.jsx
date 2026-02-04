@@ -103,6 +103,26 @@ const Empresas = () => {
     }
   };
 
+  const exportarParaExcel = async () => {
+    try {
+      const response = await api.get('/exportar/empresas', {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `empresas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('Erro ao exportar dados para Excel');
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -112,6 +132,9 @@ const Empresas = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2>Empresas Clientes</h2>
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-info" onClick={exportarParaExcel}>
+                📊 Exportar Excel
+              </button>
               <ImprimirRelatorio dados={empresas} tipo="empresas" />
               <button className="btn btn-success" onClick={() => abrirModal()}>
                 + Nova Empresa

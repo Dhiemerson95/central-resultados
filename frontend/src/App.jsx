@@ -8,6 +8,8 @@ import Empresas from './pages/Empresas';
 import Clinicas from './pages/Clinicas';
 import Usuarios from './pages/Usuarios';
 import Configuracoes from './pages/Configuracoes';
+import Permissoes from './pages/Permissoes';
+import ConfigSMTP from './pages/ConfigSMTP';
 import './App.css';
 
 function App() {
@@ -54,6 +56,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <Configuracoes />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/permissoes"
+              element={
+                <PrivateRoute>
+                  <Permissoes />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/smtp"
+              element={
+                <PrivateRoute>
+                  <ConfigSMTP />
                 </PrivateRoute>
               }
             />

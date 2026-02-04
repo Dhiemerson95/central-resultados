@@ -276,6 +276,31 @@ const Exames = () => {
     }
   };
 
+  const exportarParaExcel = async () => {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filtros).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      const response = await api.get(`/exportar/exames?${params.toString()}`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `exames_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('Erro ao exportar dados para Excel');
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -285,6 +310,9 @@ const Exames = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2>Exames Ocupacionais</h2>
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-info" onClick={exportarParaExcel}>
+                📊 Exportar Excel
+              </button>
               <ImprimirRelatorio dados={exames} tipo="exames" />
               <button className="btn btn-success" onClick={() => abrirModal()}>
                 + Novo Exame
