@@ -9,6 +9,7 @@ Este arquivo contém uma função que:
 - ✅ Verifica se as tabelas existem antes de criar
 - ✅ Verifica se as colunas existem antes de adicionar
 - ✅ Insere dados padrão (permissões, perfis)
+- ✅ **CRIA USUÁRIO ADMINISTRADOR PADRÃO** se a tabela estiver vazia
 - ✅ Usa transações (BEGIN/COMMIT/ROLLBACK) para segurança
 - ✅ Exibe logs detalhados de cada etapa
 
@@ -22,6 +23,17 @@ O servidor agora:
 
 ### 3. Biblioteca XLSX
 - ✅ Já estava instalada no package.json
+
+---
+
+## 🔐 CREDENCIAIS DO ADMINISTRADOR PADRÃO
+
+Quando você iniciar o servidor pela primeira vez, será criado automaticamente:
+
+**E-mail:** `admin@astassessoria.com.br`  
+**Senha:** `Admin@2024`
+
+⚠️ **IMPORTANTE:** Altere a senha após o primeiro login!
 
 ---
 
@@ -41,7 +53,9 @@ O servidor agora:
    - **Operador**: 13 permissões (cadastros e gestão de exames)
    - **Cliente**: 3 permissões (apenas visualização)
 
-3. Inicia o servidor normalmente
+3. **CRIA O USUÁRIO ADMINISTRADOR** (se não existir nenhum usuário)
+
+4. Inicia o servidor normalmente
 
 ---
 
@@ -60,6 +74,13 @@ npm run dev
 📋 Criando tabela permissoes...
 📋 Inserindo permissões padrão...
 📋 Inserindo perfis padrão...
+📋 Verificando se existe usuário administrador...
+👤 Criando usuário administrador padrão...
+✅ Usuário administrador criado:
+   📧 E-mail: admin@astassessoria.com.br
+   🔑 Senha: Admin@2024
+
+⚠️  IMPORTANTE: Altere a senha após o primeiro login!
 ✅ Migrations executadas com sucesso!
 ✅ Servidor rodando na porta 8080
 🌍 Ambiente: development

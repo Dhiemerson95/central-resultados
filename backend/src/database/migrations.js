@@ -1,4 +1,5 @@
 const db = require('./db');
+const bcrypt = require('bcryptjs');
 
 const executarMigrations = async () => {
   console.log('🔄 Iniciando verificação de migrations...');
@@ -201,6 +202,35 @@ const executarMigrations = async () => {
         AND perm.nome IN ('ver_exames', 'imprimir_exames', 'visualizar_laudo')
       ON CONFLICT DO NOTHING;
     `);
+
+    console.log('📋 Verificando se existe usuário administrador...');
+    const usuariosExistentes = await db.query('SELECT COUNT(*) as total FROM usuarios');
+    const totalUsuarios = parseInt(usuariosExistentes.rows[0].total);
+
+    if (totalUsuarios === 0) {
+      console.log('👤 Criando usuário administrador padrão...');
+      
+      const perfilAdmin = await db.query("SELECT id FROM perfis WHERE nome = 'Admin' LIMIT 1");
+      const perfilAdminId = perfilAdmin.rows[0]?.id;
+
+      const emailAdmin = 'admin@astassessoria.com.br';
+      const senhaAdmin = 'Admin@2024';
+      const senhaHash = await bcrypt.hash(senhaAdmin, 10);
+
+      await db.query(
+        `INSERT INTO usuarios (nome, email, senha, perfil, perfil_id, ativo) 
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        ['Administrador', emailAdmin, senhaHash, 'admin', perfilAdminId, true]
+      );
+
+      console.log('✅ Usuário administrador criado:');
+      console.log(`   📧 E-mail: ${emailAdmin}`);
+      console.log(`   🔑 Senha: ${senhaAdmin}`);
+      console.log('');
+      console.log('⚠️  IMPORTANTE: Altere a senha após o primeiro login!');
+    } else {
+      console.log(`✓ Tabela de usuários já possui ${totalUsuarios} usuário(s)`);
+    }
 
     await db.query('COMMIT');
     console.log('✅ Migrations executadas com sucesso!');
