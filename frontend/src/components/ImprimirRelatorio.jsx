@@ -124,6 +124,10 @@ const ImprimirRelatorio = ({ dados, tipo }) => {
             max-width: 200px;
             max-height: 80px;
             margin-bottom: 15px;
+            object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
           }
 
           .header h1 {
@@ -198,7 +202,7 @@ const ImprimirRelatorio = ({ dados, tipo }) => {
       </head>
       <body>
         <div class="header">
-          ${preferencias.logo ? `<img src="${preferencias.logo}" alt="Logo" class="logo">` : ''}
+          ${preferencias.logo ? `<img src="${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${preferencias.logo}" alt="Logo" class="logo">` : ''}
           <h1>AST Assessoria - Central de Resultados</h1>
           <p>Relatório de ${tipo === 'exames' ? 'Exames' : tipo === 'empresas' ? 'Empresas' : 'Clínicas'}</p>
         </div>

@@ -1,8 +1,10 @@
 import { useAuth } from '../contexts/AuthContext';
+import { usePreferencias } from '../contexts/PreferenciasContext';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const { usuario, logout } = useAuth();
+  const { preferencias } = usePreferencias();
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
@@ -22,7 +24,22 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <h1>Central de Resultados - AST Assessoria</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          {preferencias.logo && (
+            <img 
+              src={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${preferencias.logo}`}
+              alt="Logo"
+              className="navbar-logo"
+              style={{ 
+                height: '80px',
+                width: 'auto',
+                maxWidth: '200px',
+                objectFit: 'contain'
+              }}
+            />
+          )}
+          <h1 style={{ margin: 0 }}>Central de Resultados - AST Assessoria</h1>
+        </div>
         <div className="navbar-menu">
           {podeAcessar('exames') && (
             <Link 

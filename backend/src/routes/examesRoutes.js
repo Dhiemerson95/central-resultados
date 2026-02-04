@@ -6,7 +6,8 @@ const {
   atualizarExame,
   deletarExame,
   enviarExamePorEmail,
-  marcarComoLancadoSOC
+  marcarComoLancadoSOC,
+  marcarComoEnviado
 } = require('../controllers/examesController');
 const authMiddleware = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -21,5 +22,6 @@ router.put('/:id', upload.single('arquivo'), atualizarExame);
 router.delete('/:id', deletarExame);
 router.post('/:id/enviar-email', enviarExamePorEmail);
 router.put('/:id/lancar-soc', marcarComoLancadoSOC);
+router.put('/:id/marcar-enviado', marcarComoEnviado);
 
 module.exports = router;

@@ -121,11 +121,79 @@ const executarMigrations = async () => {
         id SERIAL PRIMARY KEY,
         exame_id INTEGER REFERENCES exames(id) ON DELETE CASCADE,
         nome_arquivo VARCHAR(255) NOT NULL,
-        arquivo_path VARCHAR(500) NOT NULL,
+        arquivo_path VARCHAR(500),
+        caminho_arquivo VARCHAR(500),
         oficial BOOLEAN DEFAULT false,
         enviado_por INTEGER REFERENCES usuarios(id),
         criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    console.log('📋 Ajustando estrutura da tabela exames_anexos...');
+    await db.query(`
+      DO $$ 
+      BEGIN 
+        -- Tornar arquivo_path opcional se existir
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames_anexos' AND column_name = 'arquivo_path'
+        ) THEN
+          ALTER TABLE exames_anexos ALTER COLUMN arquivo_path DROP NOT NULL;
+        END IF;
+
+        -- Adicionar caminho_arquivo se não existir
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames_anexos' AND column_name = 'caminho_arquivo'
+        ) THEN
+          ALTER TABLE exames_anexos ADD COLUMN caminho_arquivo VARCHAR(500);
+        END IF;
+
+        -- Migrar dados de arquivo_path para caminho_arquivo
+        UPDATE exames_anexos 
+        SET caminho_arquivo = arquivo_path 
+        WHERE caminho_arquivo IS NULL AND arquivo_path IS NOT NULL;
+      END $$;
+    `);
+
+    console.log('📋 Adicionando coluna data_envio na tabela exames...');
+    await db.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames' AND column_name = 'data_envio'
+        ) THEN
+          ALTER TABLE exames ADD COLUMN data_envio TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    console.log('📋 Adicionando colunas de cores extras em configuracoes_sistema...');
+    await db.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'configuracoes_sistema' AND column_name = 'cor_sucesso'
+        ) THEN
+          ALTER TABLE configuracoes_sistema ADD COLUMN cor_sucesso VARCHAR(7) DEFAULT '#27ae60';
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'configuracoes_sistema' AND column_name = 'cor_alerta'
+        ) THEN
+          ALTER TABLE configuracoes_sistema ADD COLUMN cor_alerta VARCHAR(7) DEFAULT '#f39c12';
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'configuracoes_sistema' AND column_name = 'cor_perigo'
+        ) THEN
+          ALTER TABLE configuracoes_sistema ADD COLUMN cor_perigo VARCHAR(7) DEFAULT '#e74c3c';
+        END IF;
+      END $$;
     `);
 
     console.log('📋 Inserindo permissões padrão...');
@@ -201,6 +269,45 @@ const executarMigrations = async () => {
       WHERE p.nome = 'Cliente'
         AND perm.nome IN ('ver_exames', 'imprimir_exames', 'visualizar_laudo')
       ON CONFLICT DO NOTHING;
+    `);
+
+    console.log('📋 Criando tabela logs_atividades...');
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS logs_atividades (
+        id SERIAL PRIMARY KEY,
+        usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+        acao VARCHAR(100) NOT NULL,
+        detalhes TEXT,
+        ip VARCHAR(45),
+        data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log('📋 Criando índices para otimização de logs...');
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_logs_usuario ON logs_atividades(usuario_id);
+      CREATE INDEX IF NOT EXISTS idx_logs_acao ON logs_atividades(acao);
+      CREATE INDEX IF NOT EXISTS idx_logs_data ON logs_atividades(data_hora DESC);
+    `);
+
+    console.log('📋 Adicionando colunas de auditoria em exames_anexos...');
+    await db.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames_anexos' AND column_name = 'criado_em'
+        ) THEN
+          ALTER TABLE exames_anexos ADD COLUMN criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+        END IF;
+
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'exames_anexos' AND column_name = 'enviado_por'
+        ) THEN
+          ALTER TABLE exames_anexos ADD COLUMN enviado_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL;
+        END IF;
+      END $$;
     `);
 
     console.log('📋 Verificando se existe usuário administrador...');

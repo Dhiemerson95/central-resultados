@@ -1,0 +1,30 @@
+# ==========================================
+# TEMPLATE DE CONFIGURAÇÃO - .env.example
+# ==========================================
+# COPIE ESTE CONTEÚDO PARA backend/.env
+# ==========================================
+
+# AMBIENTE
+NODE_ENV=development
+PORT=5000
+
+# BANCO DE DADOS LOCAL
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=central_resultados
+DATABASE_USER=postgres
+DATABASE_PASSWORD=sua_senha_local
+
+# BANCO PRODUÇÃO (APENAS NO RAILWAY):
+# DATABASE_URL=postgresql://user:pass@host:port/db
+# USE_RAILWAY=true
+
+# JWT
+JWT_SECRET=sua_chave_secreta_aqui
+
+# ADMIN PADRÃO (para seed)
+ADMIN_EMAIL=admin@exemplo.com
+ADMIN_PASSWORD=admin123
+
+# UPLOADS
+UPLOAD_DIR=uploads

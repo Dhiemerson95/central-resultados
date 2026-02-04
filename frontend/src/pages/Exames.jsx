@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import ImprimirRelatorio from '../components/ImprimirRelatorio';
+import ModalAnexos from '../components/ModalAnexos';
+import { useAuth } from '../contexts/AuthContext';
 
 const Exames = () => {
+  const { usuario } = useAuth();
   const [exames, setExames] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [clinicas, setClinicas] = useState([]);
@@ -13,6 +16,10 @@ const Exames = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailData, setEmailData] = useState({ destinatario: '', assunto: '', corpo: '' });
   const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [showLaudoModal, setShowLaudoModal] = useState(false);
+  const [laudoUrl, setLaudoUrl] = useState('');
+  const [showAnexosModal, setShowAnexosModal] = useState(false);
+  const [exameIdAnexos, setExameIdAnexos] = useState(null);
 
   const [filtros, setFiltros] = useState({
     empresa_id: '',
@@ -40,6 +47,42 @@ const Exames = () => {
     codigo_exame_soc: '',
     arquivo: null
   });
+
+  const podeVerFiltro = (filtro) => {
+    if (!usuario) return false;
+    
+    const perfisRestritos = ['cliente', 'secretaria', 'secretário'];
+    if (!perfisRestritos.includes(usuario.perfil?.toLowerCase())) {
+      return true;
+    }
+
+    const filtrosPermitidos = ['busca', 'data_inicio', 'data_fim', 'status', 'empresa_id'];
+    return filtrosPermitidos.includes(filtro);
+  };
+
+  const podeVerColuna = (coluna) => {
+    if (!usuario) return false;
+    
+    const perfisRestritos = ['cliente', 'secretaria', 'secretário'];
+    if (!perfisRestritos.includes(usuario.perfil?.toLowerCase())) {
+      return true;
+    }
+
+    const colunasPermitidas = ['empresa', 'funcionario', 'cpf', 'data', 'tipo_exame', 'resultado', 'status', 'acoes'];
+    return colunasPermitidas.includes(coluna);
+  };
+
+  const podeExecutarAcao = (acao) => {
+    if (!usuario) return false;
+    
+    const perfisRestritos = ['cliente', 'secretaria', 'secretário'];
+    if (!perfisRestritos.includes(usuario.perfil?.toLowerCase())) {
+      return true;
+    }
+
+    const acoesPermitidas = ['visualizar_laudo', 'imprimir'];
+    return acoesPermitidas.includes(acao);
+  };
 
   useEffect(() => {
     carregarDados();
@@ -276,12 +319,38 @@ const Exames = () => {
     }
   };
 
+  const marcarEnviadoCliente = async (id, enviado) => {
+    try {
+      await api.put(`/exames/${id}/marcar-enviado`, { enviado });
+      alert(`Exame marcado como ${enviado ? 'enviado' : 'não enviado'} ao cliente`);
+      carregarExames();
+    } catch (error) {
+      console.error('Erro ao marcar envio:', error);
+      alert('Erro ao marcar envio ao cliente');
+    }
+  };
+
   const exportarParaExcel = async () => {
     try {
       const params = new URLSearchParams();
       Object.entries(filtros).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
+
+      const colunasVisiveis = [];
+      if (podeVerColuna('id')) colunasVisiveis.push('id');
+      if (podeVerColuna('empresa')) colunasVisiveis.push('empresa');
+      if (podeVerColuna('clinica')) colunasVisiveis.push('clinica');
+      if (podeVerColuna('funcionario')) colunasVisiveis.push('funcionario');
+      if (podeVerColuna('cpf')) colunasVisiveis.push('cpf');
+      if (podeVerColuna('data')) colunasVisiveis.push('data');
+      if (podeVerColuna('tipo_exame')) colunasVisiveis.push('tipo_exame');
+      if (podeVerColuna('resultado')) colunasVisiveis.push('resultado');
+      if (podeVerColuna('status')) colunasVisiveis.push('status');
+      if (podeVerColuna('enviado')) colunasVisiveis.push('enviado');
+      if (podeVerColuna('soc')) colunasVisiveis.push('soc');
+      
+      params.append('colunas', JSON.stringify(colunasVisiveis));
 
       const response = await api.get(`/exportar/exames?${params.toString()}`, {
         responseType: 'blob'
@@ -299,6 +368,42 @@ const Exames = () => {
       console.error('Erro ao exportar:', error);
       alert('Erro ao exportar dados para Excel');
     }
+  };
+
+  const visualizarLaudo = (exame) => {
+    if (!exame.arquivo_laudo) {
+      alert('Este exame ainda não possui laudo anexado');
+      return;
+    }
+
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const url = `${baseURL}/uploads/${exame.arquivo_laudo}`;
+    setLaudoUrl(url);
+    setShowLaudoModal(true);
+  };
+
+  const liberarExame = async (exameId) => {
+    if (!window.confirm('Tem certeza que deseja liberar este exame para o cliente?')) return;
+
+    try {
+      await api.post(`/anexos/exames/${exameId}/liberar`);
+      alert('Exame liberado com sucesso para o cliente!');
+      carregarExames();
+    } catch (error) {
+      console.error('Erro ao liberar exame:', error);
+      alert('Erro ao liberar exame');
+    }
+  };
+
+  const abrirModalAnexos = (exame) => {
+    setExameIdAnexos(exame.id);
+    setShowAnexosModal(true);
+  };
+
+  const fecharModalAnexos = () => {
+    setShowAnexosModal(false);
+    setExameIdAnexos(null);
+    carregarExames();
   };
 
   return (
@@ -333,35 +438,39 @@ const Exames = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label>Empresa</label>
-              <select
-                name="empresa_id"
-                className="form-control"
-                value={filtros.empresa_id}
-                onChange={handleFiltroChange}
-              >
-                <option value="">Todas</option>
-                {empresas.map(emp => (
-                  <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
-                ))}
-              </select>
-            </div>
+            {podeVerFiltro('empresa_id') && (
+              <div className="form-group">
+                <label>Empresa</label>
+                <select
+                  name="empresa_id"
+                  className="form-control"
+                  value={filtros.empresa_id}
+                  onChange={handleFiltroChange}
+                >
+                  <option value="">Todas</option>
+                  {empresas.map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            <div className="form-group">
-              <label>Clínica</label>
-              <select
-                name="clinica_id"
-                className="form-control"
-                value={filtros.clinica_id}
-                onChange={handleFiltroChange}
-              >
-                <option value="">Todas</option>
-                {clinicas.map(cli => (
-                  <option key={cli.id} value={cli.id}>{cli.nome}</option>
-                ))}
-              </select>
-            </div>
+            {podeVerFiltro('clinica_id') && (
+              <div className="form-group">
+                <label>Clínica</label>
+                <select
+                  name="clinica_id"
+                  className="form-control"
+                  value={filtros.clinica_id}
+                  onChange={handleFiltroChange}
+                >
+                  <option value="">Todas</option>
+                  {clinicas.map(cli => (
+                    <option key={cli.id} value={cli.id}>{cli.nome}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="form-group">
               <label>Data Início</label>
@@ -403,33 +512,37 @@ const Exames = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Enviado p/ Cliente</label>
-              <select
-                name="enviado_cliente"
-                className="form-control"
-                value={filtros.enviado_cliente}
-                onChange={handleFiltroChange}
-              >
-                <option value="">Todos</option>
-                <option value="true">Sim</option>
-                <option value="false">Não</option>
-              </select>
-            </div>
+            {podeVerFiltro('enviado_cliente') && (
+              <div className="form-group">
+                <label>Enviado p/ Cliente</label>
+                <select
+                  name="enviado_cliente"
+                  className="form-control"
+                  value={filtros.enviado_cliente}
+                  onChange={handleFiltroChange}
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
+                </select>
+              </div>
+            )}
 
-            <div className="form-group">
-              <label>Lançado no SOC</label>
-              <select
-                name="lancado_soc"
-                className="form-control"
-                value={filtros.lancado_soc}
-                onChange={handleFiltroChange}
-              >
-                <option value="">Todos</option>
-                <option value="true">Sim</option>
-                <option value="false">Não</option>
-              </select>
-            </div>
+            {podeVerFiltro('lancado_soc') && (
+              <div className="form-group">
+                <label>Lançado no SOC</label>
+                <select
+                  name="lancado_soc"
+                  className="form-control"
+                  value={filtros.lancado_soc}
+                  onChange={handleFiltroChange}
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <button className="btn btn-secondary" onClick={limparFiltros} style={{ marginBottom: '20px' }}>
@@ -452,8 +565,8 @@ const Exames = () => {
                     <th>Tipo de Exame</th>
                     <th>Resultado</th>
                     <th>Status</th>
-                    <th>Enviado</th>
-                    <th>SOC</th>
+                    {podeVerColuna('enviado') && <th>Enviado</th>}
+                    {podeVerColuna('soc') && <th>SOC</th>}
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -482,46 +595,100 @@ const Exames = () => {
                             {exame.status}
                           </span>
                         </td>
-                        <td>
-                          <span className={`badge badge-${exame.enviado_cliente ? 'success' : 'danger'}`}>
-                            {exame.enviado_cliente ? 'Sim' : 'Não'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`badge badge-${exame.lancado_soc ? 'success' : 'danger'}`}>
-                            {exame.lancado_soc ? 'Sim' : 'Não'}
-                          </span>
-                        </td>
+                        {podeVerColuna('enviado') && (
+                          <td>
+                            {podeExecutarAcao('marcar_soc') ? (
+                              <button
+                                className={`btn btn-small ${exame.enviado_cliente ? 'btn-success' : 'btn-danger'}`}
+                                onClick={() => marcarEnviadoCliente(exame.id, !exame.enviado_cliente)}
+                                title={exame.enviado_cliente ? 'Marcar como Não Enviado' : 'Marcar como Enviado'}
+                                style={{ cursor: 'pointer', padding: '4px 8px' }}
+                              >
+                                {exame.enviado_cliente ? '✓ Sim' : '✗ Não'}
+                              </button>
+                            ) : (
+                              <span className={`badge badge-${exame.enviado_cliente ? 'success' : 'danger'}`}>
+                                {exame.enviado_cliente ? 'Sim' : 'Não'}
+                              </span>
+                            )}
+                          </td>
+                        )}
+                        {podeVerColuna('soc') && (
+                          <td>
+                            <span className={`badge badge-${exame.lancado_soc ? 'success' : 'danger'}`}>
+                              {exame.lancado_soc ? 'Sim' : 'Não'}
+                            </span>
+                          </td>
+                        )}
                         <td>
                           <div className="action-buttons">
                             <button
-                              className="btn btn-primary btn-small"
-                              onClick={() => abrirModal(exame)}
-                              title="Editar"
+                              className="btn btn-info btn-small"
+                              onClick={() => visualizarLaudo(exame)}
+                              title="Visualizar Laudo"
                             >
-                              ✏️
+                              👁️
                             </button>
-                            <button
-                              className="btn btn-success btn-small"
-                              onClick={() => abrirModalEmail(exame)}
-                              title="Enviar E-mail"
-                            >
-                              📧
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-small"
-                              onClick={() => marcarLancadoSOC(exame.id, !exame.lancado_soc)}
-                              title={exame.lancado_soc ? 'Desmarcar SOC' : 'Marcar SOC'}
-                            >
-                              {exame.lancado_soc ? '✔️' : '⏳'}
-                            </button>
-                            <button
-                              className="btn btn-danger btn-small"
-                              onClick={() => deletarExame(exame.id)}
-                              title="Deletar"
-                            >
-                              🗑️
-                            </button>
+
+                            {podeExecutarAcao('editar') && (
+                              <>
+                                <button
+                                  className="btn btn-success btn-small"
+                                  onClick={() => abrirModalAnexos(exame)}
+                                  title="Gerenciar Arquivos"
+                                >
+                                  📎
+                                </button>
+                                
+                                <button
+                                  className="btn btn-primary btn-small"
+                                  onClick={() => abrirModal(exame)}
+                                  title="Editar"
+                                >
+                                  ✏️
+                                </button>
+                              </>
+                            )}
+                            
+                            {podeExecutarAcao('enviar') && (
+                              <button
+                                className="btn btn-success btn-small"
+                                onClick={() => abrirModalEmail(exame)}
+                                title="Enviar E-mail"
+                              >
+                                📧
+                              </button>
+                            )}
+                            
+                            {podeExecutarAcao('marcar_soc') && (
+                              <button
+                                className="btn btn-secondary btn-small"
+                                onClick={() => marcarLancadoSOC(exame.id, !exame.lancado_soc)}
+                                title={exame.lancado_soc ? 'Desmarcar SOC' : 'Marcar SOC'}
+                              >
+                                {exame.lancado_soc ? '✔️' : '⏳'}
+                              </button>
+                            )}
+                            
+                            {podeExecutarAcao('liberar') && !exame.liberado_cliente && (
+                              <button
+                                className="btn btn-warning btn-small"
+                                onClick={() => liberarExame(exame.id)}
+                                title="Liberar para Cliente"
+                              >
+                                🔓
+                              </button>
+                            )}
+                            
+                            {podeExecutarAcao('deletar') && (
+                              <button
+                                className="btn btn-danger btn-small"
+                                onClick={() => deletarExame(exame.id)}
+                                title="Deletar"
+                              >
+                                🗑️
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -802,6 +969,47 @@ const Exames = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {showLaudoModal && (
+        <div className="modal-overlay" onClick={() => setShowLaudoModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '90%', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Visualizar Laudo</h2>
+              <button className="btn btn-secondary btn-small" onClick={() => setShowLaudoModal(false)}>✕</button>
+            </div>
+
+            <div style={{ height: '70vh', overflow: 'auto' }}>
+              <iframe
+                src={laudoUrl}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="Visualização de Laudo"
+              />
+            </div>
+
+            <div className="modal-footer">
+              <a 
+                href={laudoUrl} 
+                download 
+                className="btn btn-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📥 Baixar Laudo
+              </a>
+              <button className="btn btn-secondary" onClick={() => setShowLaudoModal(false)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAnexosModal && exameIdAnexos && (
+        <ModalAnexos
+          exameId={exameIdAnexos}
+          onClose={fecharModalAnexos}
+        />
       )}
     </div>
   );

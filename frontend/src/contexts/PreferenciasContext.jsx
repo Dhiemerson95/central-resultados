@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import api from '../services/api';
 
 const PreferenciasContext = createContext({});
 
@@ -7,20 +8,43 @@ export const PreferenciasProvider = ({ children }) => {
     fontFamily: 'Verdana',
     fontSize: '10pt',
     tema: 'claro',
-    logo: null
+    logo: null,
+    corPrimaria: '#2c3e50',
+    corSecundaria: '#3498db',
+    corSucesso: '#27ae60',
+    corAlerta: '#f39c12',
+    corPerigo: '#e74c3c'
   });
 
   useEffect(() => {
-    const preferenciasLocalStorage = localStorage.getItem('preferencias');
-    if (preferenciasLocalStorage) {
-      setPreferencias(JSON.parse(preferenciasLocalStorage));
-    }
+    carregarConfiguracoes();
   }, []);
+
+  const carregarConfiguracoes = async () => {
+    try {
+      const response = await api.get('/configuracoes');
+      const config = response.data;
+      
+      const novasPrefs = {
+        ...preferencias,
+        logo: config.logo,
+        corPrimaria: config.cor_primaria || '#2c3e50',
+        corSecundaria: config.cor_secundaria || '#3498db',
+        corSucesso: config.cor_sucesso || '#27ae60',
+        corAlerta: config.cor_alerta || '#f39c12',
+        corPerigo: config.cor_perigo || '#e74c3c'
+      };
+      
+      setPreferencias(novasPrefs);
+      aplicarPreferencias(novasPrefs);
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+    }
+  };
 
   const atualizarPreferencias = (novasPreferencias) => {
     const prefsAtualizadas = { ...preferencias, ...novasPreferencias };
     setPreferencias(prefsAtualizadas);
-    localStorage.setItem('preferencias', JSON.stringify(prefsAtualizadas));
     aplicarPreferencias(prefsAtualizadas);
   };
 
@@ -35,12 +59,8 @@ export const PreferenciasProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    aplicarPreferencias(preferencias);
-  }, [preferencias]);
-
   return (
-    <PreferenciasContext.Provider value={{ preferencias, atualizarPreferencias }}>
+    <PreferenciasContext.Provider value={{ preferencias, atualizarPreferencias, carregarConfiguracoes }}>
       {children}
     </PreferenciasContext.Provider>
   );

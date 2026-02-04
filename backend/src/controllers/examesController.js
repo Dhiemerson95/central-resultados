@@ -29,6 +29,13 @@ const listarExames = async (req, res) => {
     const params = [];
     let paramCount = 1;
 
+    if (!data_inicio && !data_fim && !busca) {
+      const hoje = new Date().toISOString().split('T')[0];
+      query += ` AND DATE(e.data_atendimento) = $${paramCount}`;
+      params.push(hoje);
+      paramCount++;
+    }
+
     if (empresa_id) {
       query += ` AND e.empresa_id = $${paramCount}`;
       params.push(empresa_id);
@@ -444,6 +451,27 @@ const marcarComoLancadoSOC = async (req, res) => {
   }
 };
 
+const marcarComoEnviado = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { enviado } = req.body;
+
+    const result = await db.query(
+      'UPDATE exames SET enviado_cliente = $1, data_envio = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [enviado, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Exame não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao marcar exame como enviado:', error);
+    res.status(500).json({ error: 'Erro ao marcar exame como enviado' });
+  }
+};
+
 module.exports = {
   listarExames,
   obterExame,
@@ -451,5 +479,6 @@ module.exports = {
   atualizarExame,
   deletarExame,
   enviarExamePorEmail,
-  marcarComoLancadoSOC
+  marcarComoLancadoSOC,
+  marcarComoEnviado
 };

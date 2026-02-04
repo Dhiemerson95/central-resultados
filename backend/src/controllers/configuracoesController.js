@@ -12,6 +12,9 @@ const obterConfiguracoes = async (req, res) => {
         logo: null,
         cor_primaria: '#2c3e50',
         cor_secundaria: '#3498db',
+        cor_sucesso: '#27ae60',
+        cor_alerta: '#f39c12',
+        cor_perigo: '#e74c3c',
         exibir_data_hora: true,
         smtp_host: null,
         smtp_port: null,
@@ -21,7 +24,13 @@ const obterConfiguracoes = async (req, res) => {
       });
     }
 
-    res.json(result.rows[0]);
+    const config = result.rows[0];
+    
+    if (config.logo && !config.logo.startsWith('/uploads/') && !config.logo.startsWith('http')) {
+      config.logo = `/uploads/${config.logo}`;
+    }
+
+    res.json(config);
   } catch (error) {
     console.error('Erro ao obter configurações:', error);
     res.status(500).json({ error: 'Erro ao obter configurações' });
@@ -33,6 +42,9 @@ const atualizarConfiguracoes = async (req, res) => {
     const {
       cor_primaria,
       cor_secundaria,
+      cor_sucesso,
+      cor_alerta,
+      cor_perigo,
       exibir_data_hora,
       smtp_host,
       smtp_port,
@@ -44,6 +56,7 @@ const atualizarConfiguracoes = async (req, res) => {
     let logo = req.body.logo;
     if (req.file) {
       logo = req.file.filename;
+      console.log('📸 Logo recebida:', req.file.filename);
     }
 
     const existente = await db.query('SELECT id FROM configuracoes_sistema LIMIT 1');
@@ -52,13 +65,16 @@ const atualizarConfiguracoes = async (req, res) => {
     if (existente.rows.length === 0) {
       result = await db.query(
         `INSERT INTO configuracoes_sistema (
-          logo, cor_primaria, cor_secundaria, exibir_data_hora,
+          logo, cor_primaria, cor_secundaria, cor_sucesso, cor_alerta, cor_perigo, exibir_data_hora,
           smtp_host, smtp_port, smtp_usuario, smtp_senha, smtp_secure
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
         [
           logo,
           cor_primaria || '#2c3e50',
           cor_secundaria || '#3498db',
+          cor_sucesso || '#27ae60',
+          cor_alerta || '#f39c12',
+          cor_perigo || '#e74c3c',
           exibir_data_hora !== undefined ? exibir_data_hora : true,
           smtp_host,
           smtp_port,
@@ -68,39 +84,103 @@ const atualizarConfiguracoes = async (req, res) => {
         ]
       );
     } else {
+      const updates = [];
+      const values = [];
+      let paramCount = 1;
+
+      if (logo !== undefined) {
+        updates.push(`logo = $${paramCount}`);
+        values.push(logo);
+        paramCount++;
+      }
+
+      if (cor_primaria) {
+        updates.push(`cor_primaria = $${paramCount}`);
+        values.push(cor_primaria);
+        paramCount++;
+      }
+
+      if (cor_secundaria) {
+        updates.push(`cor_secundaria = $${paramCount}`);
+        values.push(cor_secundaria);
+        paramCount++;
+      }
+
+      if (cor_sucesso) {
+        updates.push(`cor_sucesso = $${paramCount}`);
+        values.push(cor_sucesso);
+        paramCount++;
+      }
+
+      if (cor_alerta) {
+        updates.push(`cor_alerta = $${paramCount}`);
+        values.push(cor_alerta);
+        paramCount++;
+      }
+
+      if (cor_perigo) {
+        updates.push(`cor_perigo = $${paramCount}`);
+        values.push(cor_perigo);
+        paramCount++;
+      }
+
+      if (exibir_data_hora !== undefined) {
+        updates.push(`exibir_data_hora = $${paramCount}`);
+        values.push(exibir_data_hora);
+        paramCount++;
+      }
+
+      if (smtp_host !== undefined) {
+        updates.push(`smtp_host = $${paramCount}`);
+        values.push(smtp_host);
+        paramCount++;
+      }
+
+      if (smtp_port !== undefined) {
+        updates.push(`smtp_port = $${paramCount}`);
+        values.push(smtp_port);
+        paramCount++;
+      }
+
+      if (smtp_usuario !== undefined) {
+        updates.push(`smtp_usuario = $${paramCount}`);
+        values.push(smtp_usuario);
+        paramCount++;
+      }
+
+      if (smtp_senha !== undefined) {
+        updates.push(`smtp_senha = $${paramCount}`);
+        values.push(smtp_senha);
+        paramCount++;
+      }
+
+      if (smtp_secure !== undefined) {
+        updates.push(`smtp_secure = $${paramCount}`);
+        values.push(smtp_secure);
+        paramCount++;
+      }
+
+      updates.push('atualizado_em = CURRENT_TIMESTAMP');
+
+      values.push(existente.rows[0].id);
+
       result = await db.query(
-        `UPDATE configuracoes_sistema SET
-          logo = COALESCE($1, logo),
-          cor_primaria = $2,
-          cor_secundaria = $3,
-          exibir_data_hora = $4,
-          smtp_host = $5,
-          smtp_port = $6,
-          smtp_usuario = $7,
-          smtp_senha = COALESCE($8, smtp_senha),
-          smtp_secure = $9,
-          atualizado_em = CURRENT_TIMESTAMP
-        WHERE id = $10
-        RETURNING *`,
-        [
-          logo,
-          cor_primaria || '#2c3e50',
-          cor_secundaria || '#3498db',
-          exibir_data_hora !== undefined ? exibir_data_hora : true,
-          smtp_host,
-          smtp_port,
-          smtp_usuario,
-          smtp_senha,
-          smtp_secure !== undefined ? smtp_secure : true,
-          existente.rows[0].id
-        ]
+        `UPDATE configuracoes_sistema SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+        values
       );
     }
 
-    res.json(result.rows[0]);
+    const config = result.rows[0];
+    
+    if (config.logo) {
+      config.logo = `/uploads/${config.logo}`;
+    }
+
+    console.log('✅ Configurações salvas:', config);
+    res.json(config);
   } catch (error) {
-    console.error('Erro ao atualizar configurações:', error);
-    res.status(500).json({ error: 'Erro ao atualizar configurações' });
+    console.error('❌ Erro ao atualizar configurações:', error);
+    res.status(500).json({ error: 'Erro ao atualizar configurações: ' + error.message });
   }
 };
 

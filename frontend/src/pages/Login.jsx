@@ -12,18 +12,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (loading) {
+      return;
+    }
+
     setErro('');
     setLoading(true);
 
-    const resultado = await login(email, senha);
+    try {
+      const resultado = await login(email, senha);
 
-    if (resultado.sucesso) {
-      navigate('/');
-    } else {
-      setErro(resultado.erro);
+      if (resultado.sucesso) {
+        navigate('/');
+      } else {
+        setErro(resultado.erro || 'Erro ao fazer login');
+        setLoading(false);
+      }
+    } catch (error) {
+      setErro('Erro ao fazer login. Tente novamente.');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

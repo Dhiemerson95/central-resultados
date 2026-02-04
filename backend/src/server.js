@@ -22,18 +22,22 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors({
   origin: [
-    'http://localhost:5173',
     'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
     'https://resultados.astassessoria.com.br'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(path.join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads')));
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+console.log('📁 Caminho absoluto de uploads:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/exames', examesRoutes);

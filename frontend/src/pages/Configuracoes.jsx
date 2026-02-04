@@ -5,10 +5,12 @@ import Navbar from '../components/Navbar';
 import api from '../services/api';
 
 const Configuracoes = () => {
-  const { preferencias, atualizarPreferencias } = usePreferencias();
+  const { preferencias, atualizarPreferencias, carregarConfiguracoes } = usePreferencias();
   const { usuario } = useAuth();
   const [logoFile, setLogoFile] = useState(null);
   const [previewLogo, setPreviewLogo] = useState(preferencias.logo);
+  const [salvandoLogo, setSalvandoLogo] = useState(false);
+  const [salvandoCores, setSalvandoCores] = useState(false);
 
   const fontes = [
     'Verdana',
@@ -64,20 +66,27 @@ const Configuracoes = () => {
       return;
     }
 
+    if (salvandoLogo) {
+      return;
+    }
+
     try {
+      setSalvandoLogo(true);
       const formData = new FormData();
       formData.append('logo', logoFile);
 
-      const response = await api.post('/configuracoes/logo', formData, {
+      const response = await api.put('/configuracoes', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      atualizarPreferencias({ logo: response.data.logo });
+      await carregarConfiguracoes();
       alert('Logo atualizada com sucesso!');
       setLogoFile(null);
     } catch (error) {
       console.error('Erro ao salvar logo:', error);
       alert('Erro ao salvar logo: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setSalvandoLogo(false);
     }
   };
 
@@ -85,6 +94,61 @@ const Configuracoes = () => {
     setPreviewLogo(null);
     setLogoFile(null);
     atualizarPreferencias({ logo: null });
+  };
+
+  const salvarCores = async () => {
+    if (salvandoCores) {
+      return;
+    }
+
+    try {
+      setSalvandoCores(true);
+      
+      const coresData = {
+        cor_primaria: preferencias.corPrimaria || '#2c3e50',
+        cor_secundaria: preferencias.corSecundaria || '#3498db',
+        cor_sucesso: preferencias.corSucesso || '#27ae60',
+        cor_alerta: preferencias.corAlerta || '#f39c12',
+        cor_perigo: preferencias.corPerigo || '#e74c3c'
+      };
+
+      await api.put('/configuracoes', coresData);
+      alert('Cores salvas com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar cores:', error);
+      alert('Erro ao salvar cores: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setSalvandoCores(false);
+    }
+  };
+
+  const restaurarCoresPadrao = async () => {
+    if (!window.confirm('Deseja restaurar as cores padrão do sistema?')) return;
+
+    try {
+      const coresPadrao = {
+        cor_primaria: '#2c3e50',
+        cor_secundaria: '#3498db',
+        cor_sucesso: '#27ae60',
+        cor_alerta: '#f39c12',
+        cor_perigo: '#e74c3c'
+      };
+
+      await api.put('/configuracoes', coresPadrao);
+      
+      atualizarPreferencias({
+        corPrimaria: '#2c3e50',
+        corSecundaria: '#3498db',
+        corSucesso: '#27ae60',
+        corAlerta: '#f39c12',
+        corPerigo: '#e74c3c'
+      });
+
+      alert('Cores restauradas para o padrão!');
+    } catch (error) {
+      console.error('Erro ao restaurar cores:', error);
+      alert('Erro ao restaurar cores padrão');
+    }
   };
 
   const restaurarPadroes = () => {
@@ -186,30 +250,169 @@ const Configuracoes = () => {
               A logo será exibida nos relatórios impressos e no topo do sistema
             </p>
 
-            {previewLogo && (
-              <div className="logo-preview">
-                <img src={previewLogo} alt="Logo" />
-                <button className="btn btn-danger btn-small" onClick={removerLogo}>
-                  Remover Logo
-                </button>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+              <div style={{ flex: '0 0 200px' }}>
+                {previewLogo ? (
+                  <div className="logo-preview" style={{ 
+                    border: '2px dashed #ddd', 
+                    borderRadius: '8px', 
+                    padding: '15px', 
+                    textAlign: 'center',
+                    backgroundColor: '#f9f9f9'
+                  }}>
+                    <img 
+                      src={previewLogo} 
+                      alt="Logo Preview" 
+                      style={{ 
+                        maxWidth: '100%', 
+                        maxHeight: '150px',
+                        objectFit: 'contain',
+                        marginBottom: '10px'
+                      }} 
+                    />
+                    <button 
+                      className="btn btn-danger btn-small" 
+                      onClick={removerLogo}
+                      style={{ marginTop: '10px' }}
+                    >
+                      🗑️ Remover
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ 
+                    border: '2px dashed #ddd', 
+                    borderRadius: '8px', 
+                    padding: '40px 15px', 
+                    textAlign: 'center',
+                    backgroundColor: '#f9f9f9',
+                    color: '#999'
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: '10px' }}>🖼️</div>
+                    <div>Nenhuma logo</div>
+                  </div>
+                )}
               </div>
-            )}
 
-            <div className="form-group">
-              <label>Selecione a Logo (PNG, JPG - Máx 2MB)</label>
-              <input
-                type="file"
-                className="form-control"
-                accept="image/png,image/jpeg,image/jpg"
-                onChange={handleLogoChange}
-              />
+              <div style={{ flex: 1 }}>
+                <div className="form-group">
+                  <label>Selecione a Logo (PNG, JPG - Máx 2MB)</label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onChange={handleLogoChange}
+                  />
+                </div>
+
+                {logoFile && (
+                  <button 
+                    className="btn btn-success" 
+                    onClick={salvarLogo} 
+                    style={{ marginTop: '10px' }}
+                    disabled={salvandoLogo}
+                  >
+                    {salvandoLogo ? '💾 Salvando...' : '💾 Salvar Logo'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="config-section">
+            <h3>🎨 Cores do Sistema</h3>
+            <p style={{ fontSize: '14px', color: '#7f8c8d', marginBottom: '15px' }}>
+              Personalize as cores do tema para deixar o sistema com a identidade visual da sua empresa
+            </p>
+            
+            <div className="config-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div className="form-group">
+                <label>Cor Primária (Cabeçalhos, Botões)</label>
+                <input
+                  type="color"
+                  className="form-control"
+                  value={preferencias.corPrimaria || '#2c3e50'}
+                  onChange={(e) => atualizarPreferencias({ corPrimaria: e.target.value })}
+                  style={{ height: '50px', cursor: 'pointer' }}
+                />
+                <small style={{ color: '#7f8c8d' }}>{preferencias.corPrimaria || '#2c3e50'}</small>
+              </div>
+
+              <div className="form-group">
+                <label>Cor Secundária (Links, Destaques)</label>
+                <input
+                  type="color"
+                  className="form-control"
+                  value={preferencias.corSecundaria || '#3498db'}
+                  onChange={(e) => atualizarPreferencias({ corSecundaria: e.target.value })}
+                  style={{ height: '50px', cursor: 'pointer' }}
+                />
+                <small style={{ color: '#7f8c8d' }}>{preferencias.corSecundaria || '#3498db'}</small>
+              </div>
+
+              <div className="form-group">
+                <label>Cor de Sucesso</label>
+                <input
+                  type="color"
+                  className="form-control"
+                  value={preferencias.corSucesso || '#27ae60'}
+                  onChange={(e) => atualizarPreferencias({ corSucesso: e.target.value })}
+                  style={{ height: '50px', cursor: 'pointer' }}
+                />
+                <small style={{ color: '#7f8c8d' }}>{preferencias.corSucesso || '#27ae60'}</small>
+              </div>
+
+              <div className="form-group">
+                <label>Cor de Alerta</label>
+                <input
+                  type="color"
+                  className="form-control"
+                  value={preferencias.corAlerta || '#f39c12'}
+                  onChange={(e) => atualizarPreferencias({ corAlerta: e.target.value })}
+                  style={{ height: '50px', cursor: 'pointer' }}
+                />
+                <small style={{ color: '#7f8c8d' }}>{preferencias.corAlerta || '#f39c12'}</small>
+              </div>
+
+              <div className="form-group">
+                <label>Cor de Perigo</label>
+                <input
+                  type="color"
+                  className="form-control"
+                  value={preferencias.corPerigo || '#e74c3c'}
+                  onChange={(e) => atualizarPreferencias({ corPerigo: e.target.value })}
+                  style={{ height: '50px', cursor: 'pointer' }}
+                />
+                <small style={{ color: '#7f8c8d' }}>{preferencias.corPerigo || '#e74c3c'}</small>
+              </div>
             </div>
 
-            {logoFile && (
-              <button className="btn btn-success" onClick={salvarLogo}>
-                Salvar Logo
+            <div className="preview-box" style={{ marginTop: '20px' }}>
+              <strong>Pré-visualização das Cores:</strong>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '15px' }}>
+                <button className="btn btn-primary" style={{ backgroundColor: preferencias.corPrimaria }}>Primária</button>
+                <button className="btn btn-info" style={{ backgroundColor: preferencias.corSecundaria }}>Secundária</button>
+                <button className="btn btn-success" style={{ backgroundColor: preferencias.corSucesso }}>Sucesso</button>
+                <button className="btn btn-warning" style={{ backgroundColor: preferencias.corAlerta }}>Alerta</button>
+                <button className="btn btn-danger" style={{ backgroundColor: preferencias.corPerigo }}>Perigo</button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <button 
+                className="btn btn-success" 
+                onClick={salvarCores} 
+                disabled={salvandoCores}
+              >
+                {salvandoCores ? '💾 Salvando...' : '💾 Salvar Cores'}
               </button>
-            )}
+
+              <button 
+                className="btn btn-secondary" 
+                onClick={restaurarCoresPadrao}
+              >
+                🔄 Restaurar Cores Padrão
+              </button>
+            </div>
           </div>
 
           <div className="config-actions">

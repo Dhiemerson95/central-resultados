@@ -9,8 +9,16 @@ const exportarExames = async (req, res) => {
       data_inicio,
       data_fim,
       tipo_exame,
-      status
+      status,
+      enviado_cliente,
+      lancado_soc,
+      colunas
     } = req.query;
+
+    const perfil = req.usuario?.perfil?.toLowerCase();
+    const isCliente = ['cliente', 'secretaria', 'secretário'].includes(perfil);
+
+    const colunasVisiveis = colunas ? JSON.parse(colunas) : null;
 
     let query = `
       SELECT 
@@ -72,26 +80,54 @@ const exportarExames = async (req, res) => {
       paramCount++;
     }
 
+    if (enviado_cliente !== undefined && enviado_cliente !== '') {
+      query += ` AND e.enviado_cliente = $${paramCount}`;
+      params.push(enviado_cliente === 'true');
+      paramCount++;
+    }
+
+    if (lancado_soc !== undefined && lancado_soc !== '') {
+      query += ` AND e.lancado_soc = $${paramCount}`;
+      params.push(lancado_soc === 'true');
+      paramCount++;
+    }
+
     query += ' ORDER BY e.data_atendimento DESC';
 
     const result = await db.query(query, params);
 
-    const dados = result.rows.map(row => ({
-      'ID': row.id,
-      'Empresa': row.empresa || 'N/A',
-      'Clínica': row.clinica || 'N/A',
-      'Funcionário': row.funcionario_nome,
-      'CPF': row.funcionario_cpf || 'N/A',
-      'Matrícula': row.funcionario_matricula || 'N/A',
-      'Data Atendimento': new Date(row.data_atendimento).toLocaleDateString('pt-BR'),
-      'Tipo Exame': row.tipo_exame,
-      'Resultado': row.resultado || 'N/A',
-      'Status': row.status,
-      'Enviado Cliente': row.enviado_cliente ? 'Sim' : 'Não',
-      'Lançado SOC': row.lancado_soc ? 'Sim' : 'Não',
-      'Observação': row.observacao || '',
-      'Código SOC': row.codigo_exame_soc || ''
-    }));
+    const dados = result.rows.map(row => {
+      const linha = {};
+
+      if (!colunasVisiveis || colunasVisiveis.includes('id')) linha['ID'] = row.id;
+      if (!colunasVisiveis || colunasVisiveis.includes('empresa')) linha['Empresa'] = row.empresa || 'N/A';
+      if (!isCliente && (!colunasVisiveis || colunasVisiveis.includes('clinica'))) linha['Clínica'] = row.clinica || 'N/A';
+      if (!colunasVisiveis || colunasVisiveis.includes('funcionario')) linha['Funcionário'] = row.funcionario_nome;
+      if (!colunasVisiveis || colunasVisiveis.includes('cpf')) linha['CPF'] = row.funcionario_cpf || 'N/A';
+      if (!colunasVisiveis || colunasVisiveis.includes('matricula')) linha['Matrícula'] = row.funcionario_matricula || 'N/A';
+      if (!colunasVisiveis || colunasVisiveis.includes('data')) linha['Data Atendimento'] = new Date(row.data_atendimento).toLocaleDateString('pt-BR');
+      if (!colunasVisiveis || colunasVisiveis.includes('tipo_exame')) linha['Tipo Exame'] = row.tipo_exame;
+      if (!colunasVisiveis || colunasVisiveis.includes('resultado')) linha['Resultado'] = row.resultado || 'N/A';
+      if (!colunasVisiveis || colunasVisiveis.includes('status')) linha['Status'] = row.status;
+      
+      if (!isCliente && (!colunasVisiveis || colunasVisiveis.includes('enviado'))) {
+        linha['Enviado Cliente'] = row.enviado_cliente ? 'Sim' : 'Não';
+      }
+      
+      if (!isCliente && (!colunasVisiveis || colunasVisiveis.includes('soc'))) {
+        linha['Lançado SOC'] = row.lancado_soc ? 'Sim' : 'Não';
+      }
+      
+      if (!isCliente && (!colunasVisiveis || colunasVisiveis.includes('observacao'))) {
+        linha['Observação'] = row.observacao || '';
+      }
+      
+      if (!isCliente && (!colunasVisiveis || colunasVisiveis.includes('codigo_soc'))) {
+        linha['Código SOC'] = row.codigo_exame_soc || '';
+      }
+
+      return linha;
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(dados);
     const workbook = XLSX.utils.book_new();

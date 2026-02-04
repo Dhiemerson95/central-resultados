@@ -7,6 +7,11 @@
 :root {
   --font-family: 'Verdana', sans-serif;
   --font-size: 10pt;
+  --cor-primaria: #2c3e50;
+  --cor-secundaria: #3498db;
+  --cor-sucesso: #27ae60;
+  --cor-alerta: #f39c12;
+  --cor-perigo: #e74c3c;
 }
 
 body {
@@ -24,7 +29,7 @@ body {
 }
 
 .navbar {
-  background-color: #2c3e50;
+  background-color: var(--cor-primaria);
   color: white;
   padding: 15px 20px;
   display: flex;
@@ -66,7 +71,7 @@ body {
 }
 
 .navbar-link.active {
-  background-color: #3498db;
+  background-color: var(--cor-secundaria);
   color: white;
 }
 
@@ -91,12 +96,13 @@ body {
 }
 
 .btn-primary {
-  background-color: #3498db;
+  background-color: var(--cor-secundaria);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #2980b9;
+  background-color: var(--cor-secundaria);
+  filter: brightness(0.9);
 }
 
 .btn-secondary {
@@ -109,21 +115,23 @@ body {
 }
 
 .btn-success {
-  background-color: #27ae60;
+  background-color: var(--cor-sucesso);
   color: white;
 }
 
 .btn-success:hover {
-  background-color: #229954;
+  background-color: var(--cor-sucesso);
+  filter: brightness(0.9);
 }
 
 .btn-danger {
-  background-color: #e74c3c;
+  background-color: var(--cor-perigo);
   color: white;
 }
 
 .btn-danger:hover {
-  background-color: #c0392b;
+  background-color: var(--cor-perigo);
+  filter: brightness(0.9);
 }
 
 .btn-small {
@@ -160,7 +168,7 @@ body {
 
 .form-control:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--cor-secundaria);
 }
 
 .filters {
@@ -345,10 +353,10 @@ button:disabled {
 }
 
 .config-section h3 {
-  color: #2c3e50;
+  color: var(--cor-primaria);
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid var(--cor-secundaria);
 }
 
 .config-grid {

@@ -13,6 +13,11 @@ const listarAnexosExame = async (req, res) => {
       [exame_id]
     );
 
+    console.log(`📋 Listando anexos do exame ${exame_id}:`, result.rows.length, 'arquivo(s)');
+    result.rows.forEach(anexo => {
+      console.log(`   - ID: ${anexo.id}, Arquivo: ${anexo.caminho_arquivo}, Oficial: ${anexo.oficial}`);
+    });
+
     res.json(result.rows);
   } catch (error) {
     console.error('Erro ao listar anexos:', error);
@@ -29,16 +34,23 @@ const adicionarAnexoExame = async (req, res) => {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
 
+    console.log('📎 Upload de anexo:');
+    console.log('   Exame ID:', exame_id);
+    console.log('   Nome original:', req.file.originalname);
+    console.log('   Nome salvo:', req.file.filename);
+    console.log('   Caminho completo:', req.file.path);
+
     const result = await db.query(
-      `INSERT INTO exames_anexos (exame_id, nome_arquivo, arquivo_path, enviado_por)
+      `INSERT INTO exames_anexos (exame_id, nome_arquivo, caminho_arquivo, enviado_por)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [exame_id, req.file.filename, req.file.path, usuario_id]
+      [exame_id, req.file.originalname, req.file.filename, usuario_id]
     );
 
+    console.log('✅ Anexo salvo com ID:', result.rows[0].id);
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Erro ao adicionar anexo:', error);
-    res.status(500).json({ error: 'Erro ao adicionar anexo' });
+    console.error('❌ Erro ao adicionar anexo:', error);
+    res.status(500).json({ error: 'Erro ao adicionar anexo: ' + error.message });
   }
 };
 

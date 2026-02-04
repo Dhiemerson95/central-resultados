@@ -10,6 +10,7 @@ const Usuarios = () => {
   const [showModal, setShowModal] = useState(false);
   const [usuarioAtual, setUsuarioAtual] = useState(null);
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [salvando, setSalvando] = useState(false);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -111,6 +112,10 @@ const Usuarios = () => {
   const salvarUsuario = async (e) => {
     e.preventDefault();
 
+    if (salvando) {
+      return;
+    }
+
     if (!formData.nome || !formData.email) {
       alert('Nome e e-mail são obrigatórios');
       return;
@@ -122,6 +127,7 @@ const Usuarios = () => {
     }
 
     try {
+      setSalvando(true);
       const dados = { ...formData };
       if (usuarioAtual && !dados.senha) {
         delete dados.senha;
@@ -140,6 +146,8 @@ const Usuarios = () => {
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
       alert('Erro ao salvar usuário: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -444,11 +452,11 @@ const Usuarios = () => {
               )}
 
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={fecharModal}>
+                <button type="button" className="btn btn-secondary" onClick={fecharModal} disabled={salvando}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-success">
-                  Salvar
+                <button type="submit" className="btn btn-success" disabled={salvando}>
+                  {salvando ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
             </form>
