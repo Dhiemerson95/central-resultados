@@ -136,8 +136,8 @@ const Logs = () => {
             Histórico de ações dos usuários no sistema
           </p>
 
-          <form onSubmit={handleFiltrar} className="filters" style={{ gap: '8px' }}>
-            <div className="form-group" style={{ maxWidth: '120px' }}>
+          <form onSubmit={handleFiltrar} className="filters">
+            <div className="form-group">
               <label>Data Início</label>
               <input
                 type="date"
@@ -147,7 +147,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '120px' }}>
+            <div className="form-group">
               <label>Data Fim</label>
               <input
                 type="date"
@@ -157,7 +157,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ flex: '1', minWidth: '160px', maxWidth: '250px' }}>
+            <div className="form-group">
               <label>Usuário</label>
               <input
                 type="text"
@@ -168,7 +168,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '110px' }}>
+            <div className="form-group">
               <label>Ação</label>
               <select
                 className="form-control"
@@ -183,38 +183,30 @@ const Logs = () => {
               </select>
             </div>
 
-            <div style={{ 
-              display: 'flex', 
-              gap: '6px', 
-              alignItems: 'flex-end',
-              flexWrap: 'nowrap'
-            }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '85px', padding: '8px 10px' }}>
-                🔍 Filtrar
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '85px', padding: '8px 10px' }}>
-                🔄 Limpar
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-success" 
-                onClick={exportarExcel}
-                disabled={logs.length === 0}
-                style={{ minWidth: '100px', padding: '8px 10px' }}
-              >
-                📊 Exportar
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={imprimirLogs}
-                disabled={logs.length === 0}
-                style={{ minWidth: '95px', padding: '8px 10px' }}
-              >
-                🖨️ Imprimir
-              </button>
-            </div>
+            <button type="submit" className="btn btn-primary">
+              🔍 Filtrar
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+              🔄 Limpar
+            </button>
           </form>
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+            <button 
+              className="btn btn-success" 
+              onClick={exportarExcel}
+              disabled={logs.length === 0}
+            >
+              📊 Exportar Excel
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={imprimirLogs}
+              disabled={logs.length === 0}
+            >
+              🖨️ Imprimir
+            </button>
+          </div>
         </div>
 
         {carregando ? (

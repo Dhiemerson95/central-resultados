@@ -464,34 +464,40 @@ const Exames = () => {
             </div>
 
             {podeVerFiltro('empresa_id') && (
-              <div className="form-group" style={{ minWidth: '140px', maxWidth: '200px' }}>
+              <div className="form-group">
                 <label>Empresa</label>
-                <input
-                  type="text"
-                  name="empresa_busca"
+                <select
+                  name="empresa_id"
                   className="form-control"
-                  placeholder="Nome da empresa"
                   value={filtros.empresa_id}
                   onChange={handleFiltroChange}
-                />
+                >
+                  <option value="">Todas</option>
+                  {empresas.map(empresa => (
+                    <option key={empresa.id} value={empresa.id}>{empresa.nome}</option>
+                  ))}
+                </select>
               </div>
             )}
 
             {podeVerFiltro('clinica_id') && (
-              <div className="form-group" style={{ minWidth: '140px', maxWidth: '200px' }}>
+              <div className="form-group">
                 <label>Clínica</label>
-                <input
-                  type="text"
-                  name="clinica_busca"
+                <select
+                  name="clinica_id"
                   className="form-control"
-                  placeholder="Nome da clínica"
                   value={filtros.clinica_id}
                   onChange={handleFiltroChange}
-                />
+                >
+                  <option value="">Todas</option>
+                  {clinicas.map(clinica => (
+                    <option key={clinica.id} value={clinica.id}>{clinica.nome}</option>
+                  ))}
+                </select>
               </div>
             )}
 
-            <div className="form-group" style={{ maxWidth: '115px' }}>
+            <div className="form-group">
               <label>Data Início</label>
               <input
                 type="date"
@@ -502,7 +508,7 @@ const Exames = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '115px' }}>
+            <div className="form-group">
               <label>Data Fim</label>
               <input
                 type="date"
@@ -513,7 +519,7 @@ const Exames = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '105px' }}>
+            <div className="form-group">
               <label>Status</label>
               <select
                 name="status"
