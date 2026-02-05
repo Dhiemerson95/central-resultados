@@ -136,8 +136,8 @@ const Logs = () => {
             Histórico de ações dos usuários no sistema
           </p>
 
-          <form onSubmit={handleFiltrar} className="filters">
-            <div className="form-group" style={{ maxWidth: '140px' }}>
+          <form onSubmit={handleFiltrar} className="filters" style={{ gap: '8px' }}>
+            <div className="form-group" style={{ maxWidth: '120px' }}>
               <label>Data Início</label>
               <input
                 type="date"
@@ -147,7 +147,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '140px' }}>
+            <div className="form-group" style={{ maxWidth: '120px' }}>
               <label>Data Fim</label>
               <input
                 type="date"
@@ -157,7 +157,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ flex: '1', minWidth: '180px' }}>
+            <div className="form-group" style={{ flex: '1', minWidth: '160px', maxWidth: '250px' }}>
               <label>Usuário</label>
               <input
                 type="text"
@@ -168,7 +168,7 @@ const Logs = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '150px' }}>
+            <div className="form-group" style={{ maxWidth: '110px' }}>
               <label>Ação</label>
               <select
                 className="form-control"
@@ -177,25 +177,22 @@ const Logs = () => {
               >
                 <option value="">Todas</option>
                 <option value="login">Login</option>
-                <option value="visualizar_exame">Visualizar Exame</option>
-                <option value="download_anexo">Download Anexo</option>
+                <option value="visualizar_exame">Visualizar</option>
+                <option value="download_anexo">Download</option>
                 <option value="pesquisa">Pesquisa</option>
-                <option value="criar_exame">Criar Exame</option>
-                <option value="editar_exame">Editar Exame</option>
-                <option value="deletar_exame">Deletar Exame</option>
               </select>
             </div>
 
             <div style={{ 
               display: 'flex', 
-              gap: '8px', 
+              gap: '6px', 
               alignItems: 'flex-end',
               flexWrap: 'nowrap'
             }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '90px', padding: '8px 12px' }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '85px', padding: '8px 10px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '90px', padding: '8px 12px' }}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '85px', padding: '8px 10px' }}>
                 🔄 Limpar
               </button>
               <button 
@@ -203,16 +200,16 @@ const Logs = () => {
                 className="btn btn-success" 
                 onClick={exportarExcel}
                 disabled={logs.length === 0}
-                style={{ minWidth: '100px', padding: '8px 12px' }}
+                style={{ minWidth: '100px', padding: '8px 10px' }}
               >
-                📊 Excel
+                📊 Exportar
               </button>
               <button 
                 type="button" 
                 className="btn btn-secondary" 
                 onClick={imprimirLogs}
                 disabled={logs.length === 0}
-                style={{ minWidth: '100px', padding: '8px 12px' }}
+                style={{ minWidth: '95px', padding: '8px 10px' }}
               >
                 🖨️ Imprimir
               </button>

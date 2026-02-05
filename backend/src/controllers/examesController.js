@@ -16,19 +16,30 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
 const deletarDoCloudinary = async (caminhoArquivo) => {
   try {
     if (!caminhoArquivo || !caminhoArquivo.includes('cloudinary')) {
-      return;
+      return { success: false, reason: 'not_cloudinary' };
     }
 
-    // Extrair public_id da URL (SEM extensão)
-    const match = caminhoArquivo.match(/\/v\d+\/(.+)\.\w+$/);
-    if (match && match[1]) {
-      const publicId = match[1];
-      console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
-      const resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      console.log('✅ Resultado Cloudinary:', JSON.stringify(resultado, null, 2));
+    console.log('🗑️ Deletando arquivo:', caminhoArquivo);
+
+    const match = caminhoArquivo.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+    if (!match || !match[1]) {
+      return { success: false, reason: 'invalid_url' };
     }
+
+    const publicId = match[1];
+    console.log('   Public ID:', publicId);
+    
+    // Tentar como 'raw' primeiro, depois 'image'
+    let resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw', invalidate: true });
+    if (resultado.result !== 'ok') {
+      resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'image', invalidate: true });
+    }
+    
+    console.log('   Resultado:', resultado.result);
+    return { success: resultado.result === 'ok' || resultado.result === 'not found', result: resultado };
   } catch (error) {
-    console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
+    console.error('⚠️ Erro ao deletar:', error.message);
+    return { success: false, error: error.message };
   }
 };
 

@@ -136,8 +136,8 @@ const HistoricoEmails = () => {
             Registro de todos os e-mails enviados pelo sistema
           </p>
 
-          <form onSubmit={handleFiltrar} className="filters">
-            <div className="form-group" style={{ maxWidth: '140px' }}>
+          <form onSubmit={handleFiltrar} className="filters" style={{ gap: '8px' }}>
+            <div className="form-group" style={{ maxWidth: '120px' }}>
               <label>Data Início</label>
               <input
                 type="date"
@@ -147,7 +147,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '140px' }}>
+            <div className="form-group" style={{ maxWidth: '120px' }}>
               <label>Data Fim</label>
               <input
                 type="date"
@@ -157,18 +157,18 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
+            <div className="form-group" style={{ flex: '1', minWidth: '180px', maxWidth: '280px' }}>
               <label>Destinatário</label>
               <input
                 type="text"
                 className="form-control"
-                placeholder="E-mail do destinatário"
+                placeholder="E-mail"
                 value={filtros.destinatario}
                 onChange={(e) => setFiltros({ ...filtros, destinatario: e.target.value })}
               />
             </div>
 
-            <div className="form-group" style={{ maxWidth: '130px' }}>
+            <div className="form-group" style={{ maxWidth: '105px' }}>
               <label>Status</label>
               <select
                 className="form-control"
@@ -178,20 +178,19 @@ const HistoricoEmails = () => {
                 <option value="">Todos</option>
                 <option value="enviado">Enviado</option>
                 <option value="erro">Erro</option>
-                <option value="pendente">Pendente</option>
               </select>
             </div>
 
             <div style={{ 
               display: 'flex', 
-              gap: '8px', 
+              gap: '6px', 
               alignItems: 'flex-end',
               flexWrap: 'nowrap'
             }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '90px', padding: '8px 12px' }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '85px', padding: '8px 10px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '90px', padding: '8px 12px' }}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '85px', padding: '8px 10px' }}>
                 🔄 Limpar
               </button>
               <button 
@@ -199,16 +198,16 @@ const HistoricoEmails = () => {
                 className="btn btn-success" 
                 onClick={exportarExcel}
                 disabled={emails.length === 0}
-                style={{ minWidth: '100px', padding: '8px 12px' }}
+                style={{ minWidth: '100px', padding: '8px 10px' }}
               >
-                📊 Excel
+                📊 Exportar
               </button>
               <button 
                 type="button" 
                 className="btn btn-secondary" 
                 onClick={imprimirEmails}
                 disabled={emails.length === 0}
-                style={{ minWidth: '100px', padding: '8px 12px' }}
+                style={{ minWidth: '95px', padding: '8px 10px' }}
               >
                 🖨️ Imprimir
               </button>

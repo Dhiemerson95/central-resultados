@@ -451,7 +451,7 @@ const Exames = () => {
           </div>
 
           <div className="filters">
-            <div className="form-group">
+            <div className="form-group" style={{ flex: '1', minWidth: '150px', maxWidth: '220px' }}>
               <label>Buscar Funcionário</label>
               <input
                 type="text"
@@ -464,40 +464,34 @@ const Exames = () => {
             </div>
 
             {podeVerFiltro('empresa_id') && (
-              <div className="form-group">
+              <div className="form-group" style={{ minWidth: '140px', maxWidth: '200px' }}>
                 <label>Empresa</label>
-                <select
-                  name="empresa_id"
+                <input
+                  type="text"
+                  name="empresa_busca"
                   className="form-control"
+                  placeholder="Nome da empresa"
                   value={filtros.empresa_id}
                   onChange={handleFiltroChange}
-                >
-                  <option value="">Todas</option>
-                  {empresas.map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
-                  ))}
-                </select>
+                />
               </div>
             )}
 
             {podeVerFiltro('clinica_id') && (
-              <div className="form-group">
+              <div className="form-group" style={{ minWidth: '140px', maxWidth: '200px' }}>
                 <label>Clínica</label>
-                <select
-                  name="clinica_id"
+                <input
+                  type="text"
+                  name="clinica_busca"
                   className="form-control"
+                  placeholder="Nome da clínica"
                   value={filtros.clinica_id}
                   onChange={handleFiltroChange}
-                >
-                  <option value="">Todas</option>
-                  {clinicas.map(cli => (
-                    <option key={cli.id} value={cli.id}>{cli.nome}</option>
-                  ))}
-                </select>
+                />
               </div>
             )}
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '115px' }}>
               <label>Data Início</label>
               <input
                 type="date"
@@ -508,7 +502,7 @@ const Exames = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '115px' }}>
               <label>Data Fim</label>
               <input
                 type="date"
@@ -519,7 +513,7 @@ const Exames = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '105px' }}>
               <label>Status</label>
               <select
                 name="status"

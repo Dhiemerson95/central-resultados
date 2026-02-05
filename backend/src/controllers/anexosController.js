@@ -16,33 +16,50 @@ const deletarDoCloudinary = async (caminhoArquivo) => {
     // Se não for URL do Cloudinary, ignorar
     if (!caminhoArquivo || !caminhoArquivo.includes('cloudinary')) {
       console.log('📁 Arquivo não está no Cloudinary, pulando exclusão:', caminhoArquivo);
-      return;
+      return { success: false, reason: 'not_cloudinary' };
     }
 
-    // Extrair public_id da URL
+    console.log('🗑️ Iniciando exclusão do Cloudinary');
+    console.log('   URL completa:', caminhoArquivo);
+
+    // Extrair public_id da URL (SEM extensão)
     // Exemplo: https://res.cloudinary.com/dmdmmphge/image/upload/v1234567/central-resultados/arquivo.pdf
-    // Public ID: central-resultados/arquivo (SEM extensão)
-    const match = caminhoArquivo.match(/\/v\d+\/(.+)\.\w+$/);
-    if (match && match[1]) {
-      const publicId = match[1];
-      console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
-      console.log('🗑️ Caminho completo:', caminhoArquivo);
-      
-      const resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      console.log('✅ Resultado da exclusão do Cloudinary:', JSON.stringify(resultado, null, 2));
-      
-      if (resultado.result === 'ok') {
-        console.log('✅ Arquivo deletado com sucesso do Cloudinary!');
-      } else {
-        console.warn('⚠️ Cloudinary retornou:', resultado.result);
-      }
+    // Public ID: central-resultados/arquivo
+    const match = caminhoArquivo.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+    
+    if (!match || !match[1]) {
+      console.error('⚠️ Não foi possível extrair public_id da URL:', caminhoArquivo);
+      return { success: false, reason: 'invalid_url' };
+    }
+
+    const publicId = match[1];
+    console.log('   Public ID extraído:', publicId);
+    
+    // Tentar deletar como 'raw' (PDF) primeiro
+    let resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw', invalidate: true });
+    console.log('   Resultado (raw):', JSON.stringify(resultado, null, 2));
+    
+    // Se não funcionou como 'raw', tentar como 'image'
+    if (resultado.result !== 'ok') {
+      console.log('   Tentando deletar como image...');
+      resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'image', invalidate: true });
+      console.log('   Resultado (image):', JSON.stringify(resultado, null, 2));
+    }
+    
+    if (resultado.result === 'ok') {
+      console.log('✅ Arquivo deletado com sucesso do Cloudinary!');
+      return { success: true, result: resultado };
+    } else if (resultado.result === 'not found') {
+      console.log('⚠️ Arquivo não encontrado no Cloudinary (já foi deletado?)');
+      return { success: true, result: resultado, reason: 'already_deleted' };
     } else {
-      console.warn('⚠️ Não foi possível extrair public_id de:', caminhoArquivo);
+      console.warn('⚠️ Cloudinary retornou:', resultado.result);
+      return { success: false, result: resultado };
     }
   } catch (error) {
     console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
     console.error('⚠️ Stack:', error.stack);
-    // Não falhar se não conseguir deletar do Cloudinary
+    return { success: false, error: error.message };
   }
 };
 
@@ -83,11 +100,58 @@ const adicionarAnexoExame = async (req, res) => {
     console.log('📎 Upload de anexo:');
     console.log('   Exame ID:', exame_id);
     console.log('   Nome original:', req.file.originalname);
-    console.log('   Arquivo (req.file):', JSON.stringify(req.file, null, 2));
+
+    // Buscar dados do exame para renomear arquivo
+    const exameResult = await db.query(
+      'SELECT funcionario_nome, funcionario_cpf FROM exames WHERE id = $1',
+      [exame_id]
+    );
+
+    if (exameResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exame não encontrado' });
+    }
+
+    const { funcionario_nome, funcionario_cpf } = exameResult.rows[0];
+
+    // Contar anexos existentes para gerar número sequencial
+    const countResult = await db.query(
+      'SELECT COUNT(*) as total FROM exames_anexos WHERE exame_id = $1',
+      [exame_id]
+    );
+    const sequencial = parseInt(countResult.rows[0].total) + 1;
 
     // Cloudinary retorna 'path' (URL completa)
     // Storage local retorna 'filename' (nome do arquivo)
-    const caminhoArquivo = req.file.path || `/uploads/${req.file.filename}`;
+    let caminhoArquivo = req.file.path || `/uploads/${req.file.filename}`;
+    
+    // Se for Cloudinary, renomear com Nome_CPF_(sequencial)
+    if (caminhoArquivo.includes('cloudinary')) {
+      const nomeLimpo = (funcionario_nome || 'SemNome').replace(/[^a-zA-Z0-9]/g, '_');
+      const cpfLimpo = (funcionario_cpf || '').replace(/[^0-9]/g, '');
+      const novoNome = `${nomeLimpo}_${cpfLimpo}_${sequencial}`;
+      
+      console.log(`🔄 Renomeando arquivo no Cloudinary para: ${novoNome}`);
+      
+      // Extrair public_id do caminho atual
+      const match = caminhoArquivo.match(/\/v\d+\/(.+)\.\w+$/);
+      if (match && match[1]) {
+        const publicIdAntigo = match[1];
+        
+        try {
+          // Renomear no Cloudinary
+          const resultado = await cloudinary.uploader.rename(
+            publicIdAntigo,
+            `central-resultados/${novoNome}`,
+            { resource_type: 'raw', overwrite: false }
+          );
+          
+          caminhoArquivo = resultado.secure_url;
+          console.log('✅ Arquivo renomeado:', caminhoArquivo);
+        } catch (renameError) {
+          console.warn('⚠️ Não foi possível renomear, usando nome original');
+        }
+      }
+    }
     
     console.log('   Caminho salvo no banco:', caminhoArquivo);
 
