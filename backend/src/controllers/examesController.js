@@ -213,6 +213,21 @@ const criarExame = async (req, res) => {
       ]
     );
 
+    const exameId = result.rows[0].id;
+
+    // Se há arquivo, adicionar à tabela de anexos também
+    if (arquivo_laudo && req.file) {
+      const nomeOriginal = req.file.originalname || 'Laudo Inicial.pdf';
+      
+      await db.query(
+        `INSERT INTO exames_anexos (exame_id, nome_arquivo, caminho_arquivo, oficial)
+         VALUES ($1, $2, $3, $4)`,
+        [exameId, nomeOriginal, arquivo_laudo, true]
+      );
+      
+      console.log(`📎 Arquivo inicial adicionado aos anexos: ${nomeOriginal}`);
+    }
+
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao criar exame:', error);

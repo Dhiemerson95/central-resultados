@@ -5,11 +5,20 @@ import api from '../services/api';
 
 const HistoricoEmails = () => {
   const { usuario } = useAuth();
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
   const [emails, setEmails] = useState([]);
-  // Filtros iniciam vazios, mas backend aplica data atual automaticamente
+  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
-    dataInicio: '',
-    dataFim: '',
+    dataInicio: getDataAtual(),
+    dataFim: getDataAtual(),
     destinatario: '',
     status: ''
   });
@@ -128,7 +137,7 @@ const HistoricoEmails = () => {
           </p>
 
           <form onSubmit={handleFiltrar} className="filters">
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '140px' }}>
               <label>Data Início</label>
               <input
                 type="date"
@@ -138,7 +147,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '140px' }}>
               <label>Data Fim</label>
               <input
                 type="date"
@@ -148,7 +157,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
               <label>Destinatário</label>
               <input
                 type="text"
@@ -159,7 +168,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '130px' }}>
               <label>Status</label>
               <select
                 className="form-control"
@@ -175,14 +184,14 @@ const HistoricoEmails = () => {
 
             <div style={{ 
               display: 'flex', 
-              gap: '10px', 
+              gap: '8px', 
               alignItems: 'flex-end',
-              flexWrap: 'wrap'
+              flexWrap: 'nowrap'
             }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '120px' }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '90px', padding: '8px 12px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '120px' }}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '90px', padding: '8px 12px' }}>
                 🔄 Limpar
               </button>
               <button 
@@ -190,16 +199,16 @@ const HistoricoEmails = () => {
                 className="btn btn-success" 
                 onClick={exportarExcel}
                 disabled={emails.length === 0}
-                style={{ minWidth: '150px' }}
+                style={{ minWidth: '100px', padding: '8px 12px' }}
               >
-                📊 Exportar Excel
+                📊 Excel
               </button>
               <button 
                 type="button" 
                 className="btn btn-secondary" 
                 onClick={imprimirEmails}
                 disabled={emails.length === 0}
-                style={{ minWidth: '120px' }}
+                style={{ minWidth: '100px', padding: '8px 12px' }}
               >
                 🖨️ Imprimir
               </button>

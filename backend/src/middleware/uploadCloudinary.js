@@ -9,13 +9,29 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Storage do Cloudinary
+// Storage do Cloudinary com nome customizado (Nome_CPF)
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'central-resultados',
-    allowed_formats: ['pdf', 'jpg', 'png', 'jpeg'],
-    resource_type: 'auto'
+  params: (req, file) => {
+    // Extrair nome e CPF do corpo da requisição
+    const nome = req.body.funcionario_nome || 'SemNome';
+    const cpf = req.body.funcionario_cpf || 'SemCPF';
+    
+    // Limpar caracteres especiais
+    const nomeLimpo = nome.replace(/[^a-zA-Z0-9]/g, '_');
+    const cpfLimpo = cpf.replace(/[^0-9]/g, '');
+    
+    // Nome final: NomeColaborador_CPF
+    const nomeArquivo = `${nomeLimpo}_${cpfLimpo}`;
+    
+    console.log(`📂 Upload Cloudinary - Nome: ${nomeArquivo}`);
+    
+    return {
+      folder: 'central-resultados',
+      allowed_formats: ['pdf', 'jpg', 'png', 'jpeg'],
+      resource_type: 'auto',
+      public_id: nomeArquivo
+    };
   }
 });
 

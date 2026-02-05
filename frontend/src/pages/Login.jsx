@@ -13,11 +13,19 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Carregar logo do sistema
+  // Carregar logo do sistema (com timeout para não atrasar login)
   useEffect(() => {
     const carregarLogo = async () => {
       try {
-        const response = await api.get('/configuracoes');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundos max
+
+        const response = await api.get('/configuracoes', { 
+          signal: controller.signal 
+        });
+        
+        clearTimeout(timeoutId);
+
         if (response.data.logo) {
           // Se for URL completa (Cloudinary), usar diretamente
           if (response.data.logo.startsWith('http://') || response.data.logo.startsWith('https://')) {
@@ -28,7 +36,7 @@ const Login = () => {
           }
         }
       } catch (error) {
-        console.log('Logo não disponível');
+        // Silenciar erro - logo é opcional
       }
     };
     carregarLogo();

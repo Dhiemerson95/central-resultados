@@ -21,12 +21,21 @@ const Exames = () => {
   const [showAnexosModal, setShowAnexosModal] = useState(false);
   const [exameIdAnexos, setExameIdAnexos] = useState(null);
 
-  // Filtros iniciam vazios, mas backend aplica data atual automaticamente
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
     empresa_id: '',
     clinica_id: '',
-    data_inicio: '',
-    data_fim: '',
+    data_inicio: getDataAtual(),
+    data_fim: getDataAtual(),
     tipo_exame: '',
     status: '',
     enviado_cliente: '',
