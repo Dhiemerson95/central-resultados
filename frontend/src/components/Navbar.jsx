@@ -34,7 +34,11 @@ const Navbar = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             {preferencias.logo && (
               <img 
-                src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`}
+                src={
+                  preferencias.logo.startsWith('http://') || preferencias.logo.startsWith('https://')
+                    ? preferencias.logo
+                    : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`
+                }
                 alt="Logo"
                 className="navbar-logo"
                 style={{ 
