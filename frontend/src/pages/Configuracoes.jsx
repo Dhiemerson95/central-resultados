@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePreferencias } from '../contexts/PreferenciasContext';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
@@ -11,6 +11,21 @@ const Configuracoes = () => {
   const [previewLogo, setPreviewLogo] = useState(preferencias.logo);
   const [salvandoLogo, setSalvandoLogo] = useState(false);
   const [salvandoCores, setSalvandoCores] = useState(false);
+
+  // Atualizar preview quando preferencias.logo mudar
+  useEffect(() => {
+    if (preferencias.logo) {
+      // Se for URL completa (Cloudinary), usar diretamente
+      if (preferencias.logo.startsWith('http://') || preferencias.logo.startsWith('https://')) {
+        setPreviewLogo(preferencias.logo);
+      } else {
+        // Se for caminho relativo, construir URL completa
+        setPreviewLogo(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${preferencias.logo}`);
+      }
+    } else {
+      setPreviewLogo(null);
+    }
+  }, [preferencias.logo]);
 
   const fontes = [
     'Verdana',
