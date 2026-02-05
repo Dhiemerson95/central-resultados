@@ -55,9 +55,14 @@ const atualizarConfiguracoes = async (req, res) => {
 
     let logo = req.body.logo;
     if (req.file) {
+      console.log('📸 Upload de logo recebido:');
+      console.log('   req.file completo:', JSON.stringify(req.file, null, 2));
+      console.log('   req.file.path:', req.file.path);
+      console.log('   req.file.filename:', req.file.filename);
+      
       // Cloudinary retorna URL completa em 'path', storage local retorna 'filename'
-      logo = req.file.path || req.file.filename;
-      console.log('📸 Logo recebida:', logo);
+      logo = req.file.path || `/uploads/${req.file.filename}`;
+      console.log('   Caminho final salvo no banco:', logo);
     }
 
     const existente = await db.query('SELECT id FROM configuracoes_sistema LIMIT 1');

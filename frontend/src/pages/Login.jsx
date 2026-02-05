@@ -80,13 +80,15 @@ const Login = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '18px',
-                  padding: '5px',
-                  color: '#7f8c8d'
+                  fontSize: '12px',
+                  padding: '5px 8px',
+                  color: '#3498db',
+                  fontWeight: '500',
+                  textDecoration: 'underline'
                 }}
                 aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
               >
-                {mostrarSenha ? '🙈' : '👁️'}
+                {mostrarSenha ? 'Ocultar' : 'Mostrar'}
               </button>
             </div>
           </div>

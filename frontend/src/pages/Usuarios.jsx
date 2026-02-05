@@ -375,8 +375,10 @@ const Usuarios = () => {
                     className="form-control"
                     value={formData.senha}
                     onChange={handleFormChange}
+                    placeholder={usuarioAtual ? 'Digite apenas se quiser alterar' : 'Mínimo 6 caracteres'}
                     required={!usuarioAtual}
                     minLength="6"
+                    style={{ paddingRight: '80px' }}
                   />
                   <button
                     type="button"
@@ -389,10 +391,13 @@ const Usuarios = () => {
                       border: 'none',
                       background: 'none',
                       cursor: 'pointer',
-                      fontSize: '18px'
+                      fontSize: '12px',
+                      color: '#3498db',
+                      fontWeight: '500',
+                      textDecoration: 'underline'
                     }}
                   >
-                    {mostrarSenha ? '👁️' : '👁️‍🗨️'}
+                    {mostrarSenha ? 'Ocultar' : 'Mostrar'}
                   </button>
                 </div>
                 <small style={{ color: '#7f8c8d', fontSize: '12px' }}>

@@ -114,11 +114,13 @@ const TrocarSenha = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '18px',
-                  color: '#7f8c8d'
+                  fontSize: '12px',
+                  color: '#3498db',
+                  fontWeight: '500',
+                  textDecoration: 'underline'
                 }}
               >
-                {mostrarSenhaAtual ? '🙈' : '👁️'}
+                {mostrarSenhaAtual ? 'Ocultar' : 'Mostrar'}
               </button>
             </div>
           </div>
@@ -147,11 +149,13 @@ const TrocarSenha = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '18px',
-                  color: '#7f8c8d'
+                  fontSize: '12px',
+                  color: '#3498db',
+                  fontWeight: '500',
+                  textDecoration: 'underline'
                 }}
               >
-                {mostrarNovaSenha ? '🙈' : '👁️'}
+                {mostrarNovaSenha ? 'Ocultar' : 'Mostrar'}
               </button>
             </div>
           </div>
@@ -180,11 +184,13 @@ const TrocarSenha = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '18px',
-                  color: '#7f8c8d'
+                  fontSize: '12px',
+                  color: '#3498db',
+                  fontWeight: '500',
+                  textDecoration: 'underline'
                 }}
               >
-                {mostrarConfirmar ? '🙈' : '👁️'}
+                {mostrarConfirmar ? 'Ocultar' : 'Mostrar'}
               </button>
             </div>
           </div>
