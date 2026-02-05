@@ -5,20 +5,10 @@ import api from '../services/api';
 
 const Logs = () => {
   const { usuario } = useAuth();
-  // Função para obter data atual no formato YYYY-MM-DD
-  const getDataAtual = () => {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  };
-
   const [logs, setLogs] = useState([]);
-  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
-    dataInicio: getDataAtual(),
-    dataFim: getDataAtual(),
+    dataInicio: '',
+    dataFim: '',
     usuario: '',
     acao: ''
   });
@@ -61,42 +51,6 @@ const Logs = () => {
       acao: ''
     });
     setTimeout(() => carregarLogs(), 100);
-  };
-
-  const exportarExcel = () => {
-    if (logs.length === 0) {
-      alert('Nenhum registro para exportar');
-      return;
-    }
-
-    // Preparar dados para Excel
-    const dados = logs.map(log => ({
-      'Data/Hora': new Date(log.data_hora).toLocaleString('pt-BR'),
-      'Usuário': log.usuario_nome || 'N/A',
-      'E-mail': log.usuario_email || 'N/A',
-      'Ação': log.acao,
-      'Detalhes': log.detalhes || '',
-      'IP': log.ip || 'N/A'
-    }));
-
-    // Converter para CSV
-    const headers = Object.keys(dados[0]).join(',');
-    const rows = dados.map(obj => Object.values(obj).map(val => 
-      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
-    ).join(','));
-    
-    const csv = [headers, ...rows].join('\n');
-    
-    // Download
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `logs_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
-  const imprimirLogs = () => {
-    window.print();
   };
 
   const getTipoIcone = (acao) => {
@@ -177,36 +131,24 @@ const Logs = () => {
               >
                 <option value="">Todas</option>
                 <option value="login">Login</option>
-                <option value="visualizar_exame">Visualizar</option>
-                <option value="download_anexo">Download</option>
+                <option value="visualizar_exame">Visualizar Exame</option>
+                <option value="download_anexo">Download Anexo</option>
                 <option value="pesquisa">Pesquisa</option>
+                <option value="criar_exame">Criar Exame</option>
+                <option value="editar_exame">Editar Exame</option>
+                <option value="deletar_exame">Deletar Exame</option>
               </select>
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              🔍 Filtrar
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
-              🔄 Limpar
-            </button>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+              <button type="submit" className="btn btn-primary">
+                🔍 Filtrar
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+                🔄 Limpar
+              </button>
+            </div>
           </form>
-
-          <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-            <button 
-              className="btn btn-success" 
-              onClick={exportarExcel}
-              disabled={logs.length === 0}
-            >
-              📊 Exportar Excel
-            </button>
-            <button 
-              className="btn btn-secondary" 
-              onClick={imprimirLogs}
-              disabled={logs.length === 0}
-            >
-              🖨️ Imprimir
-            </button>
-          </div>
         </div>
 
         {carregando ? (

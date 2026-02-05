@@ -5,20 +5,10 @@ import api from '../services/api';
 
 const HistoricoEmails = () => {
   const { usuario } = useAuth();
-  // Função para obter data atual no formato YYYY-MM-DD
-  const getDataAtual = () => {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  };
-
   const [emails, setEmails] = useState([]);
-  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
-    dataInicio: getDataAtual(),
-    dataFim: getDataAtual(),
+    dataInicio: '',
+    dataFim: '',
     destinatario: '',
     status: ''
   });
@@ -61,42 +51,6 @@ const HistoricoEmails = () => {
       status: ''
     });
     setTimeout(() => carregarEmails(), 100);
-  };
-
-  const exportarExcel = () => {
-    if (emails.length === 0) {
-      alert('Nenhum registro para exportar');
-      return;
-    }
-
-    // Preparar dados para Excel
-    const dados = emails.map(email => ({
-      'Data/Hora': new Date(email.data_envio).toLocaleString('pt-BR'),
-      'Destinatário': email.destinatario,
-      'Assunto': email.assunto,
-      'Status': email.status === 'enviado' ? 'Enviado' : 'Falhou',
-      'Funcionário': email.funcionario_nome || 'N/A',
-      'Erro': email.erro || ''
-    }));
-
-    // Converter para CSV
-    const headers = Object.keys(dados[0]).join(',');
-    const rows = dados.map(obj => Object.values(obj).map(val => 
-      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
-    ).join(','));
-    
-    const csv = [headers, ...rows].join('\n');
-    
-    // Download
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `emails_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
-  const imprimirEmails = () => {
-    window.print();
   };
 
   const reenviarEmail = async (emailId) => {
@@ -162,7 +116,7 @@ const HistoricoEmails = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="E-mail"
+                placeholder="E-mail do destinatário"
                 value={filtros.destinatario}
                 onChange={(e) => setFiltros({ ...filtros, destinatario: e.target.value })}
               />
@@ -178,33 +132,19 @@ const HistoricoEmails = () => {
                 <option value="">Todos</option>
                 <option value="enviado">Enviado</option>
                 <option value="erro">Erro</option>
+                <option value="pendente">Pendente</option>
               </select>
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              🔍 Filtrar
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
-              🔄 Limpar
-            </button>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+              <button type="submit" className="btn btn-primary">
+                🔍 Filtrar
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+                🔄 Limpar
+              </button>
+            </div>
           </form>
-
-          <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-            <button 
-              className="btn btn-success" 
-              onClick={exportarExcel}
-              disabled={emails.length === 0}
-            >
-              📊 Exportar Excel
-            </button>
-            <button 
-              className="btn btn-secondary" 
-              onClick={imprimirEmails}
-              disabled={emails.length === 0}
-            >
-              🖨️ Imprimir
-            </button>
-          </div>
         </div>
 
         {carregando ? (
