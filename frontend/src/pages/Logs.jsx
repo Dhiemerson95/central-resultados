@@ -6,9 +6,15 @@ import api from '../services/api';
 const Logs = () => {
   const { usuario } = useAuth();
   const [logs, setLogs] = useState([]);
+  // Inicializar filtros com data atual
+  const getDataAtual = () => {
+    const hoje = new Date();
+    return hoje.toISOString().split('T')[0];
+  };
+
   const [filtros, setFiltros] = useState({
-    dataInicio: '',
-    dataFim: '',
+    dataInicio: getDataAtual(),
+    dataFim: getDataAtual(),
     usuario: '',
     acao: ''
   });
@@ -45,12 +51,48 @@ const Logs = () => {
 
   const limparFiltros = () => {
     setFiltros({
-      dataInicio: '',
-      dataFim: '',
+      dataInicio: getDataAtual(),
+      dataFim: getDataAtual(),
       usuario: '',
       acao: ''
     });
     setTimeout(() => carregarLogs(), 100);
+  };
+
+  const exportarExcel = () => {
+    if (logs.length === 0) {
+      alert('Nenhum registro para exportar');
+      return;
+    }
+
+    // Preparar dados para Excel
+    const dados = logs.map(log => ({
+      'Data/Hora': new Date(log.data_hora).toLocaleString('pt-BR'),
+      'Usuário': log.usuario_nome || 'N/A',
+      'E-mail': log.usuario_email || 'N/A',
+      'Ação': log.acao,
+      'Detalhes': log.detalhes || '',
+      'IP': log.ip || 'N/A'
+    }));
+
+    // Converter para CSV
+    const headers = Object.keys(dados[0]).join(',');
+    const rows = dados.map(obj => Object.values(obj).map(val => 
+      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+    ).join(','));
+    
+    const csv = [headers, ...rows].join('\n');
+    
+    // Download
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `logs_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const imprimirLogs = () => {
+    window.print();
   };
 
   const getTipoIcone = (acao) => {
@@ -146,6 +188,22 @@ const Logs = () => {
               </button>
               <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
                 🔄 Limpar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success" 
+                onClick={exportarExcel}
+                disabled={logs.length === 0}
+              >
+                📊 Exportar Excel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={imprimirLogs}
+                disabled={logs.length === 0}
+              >
+                🖨️ Imprimir
               </button>
             </div>
           </form>

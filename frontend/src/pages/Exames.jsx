@@ -21,11 +21,17 @@ const Exames = () => {
   const [showAnexosModal, setShowAnexosModal] = useState(false);
   const [exameIdAnexos, setExameIdAnexos] = useState(null);
 
+  // Inicializar filtros com data atual
+  const getDataAtual = () => {
+    const hoje = new Date();
+    return hoje.toISOString().split('T')[0];
+  };
+
   const [filtros, setFiltros] = useState({
     empresa_id: '',
     clinica_id: '',
-    data_inicio: '',
-    data_fim: '',
+    data_inicio: getDataAtual(),
+    data_fim: getDataAtual(),
     tipo_exame: '',
     status: '',
     enviado_cliente: '',

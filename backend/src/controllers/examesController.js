@@ -1,6 +1,34 @@
 const db = require('../database/db');
 const { enviarEmail } = require('../services/emailService');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
+
+// Configurar Cloudinary
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+// Função auxiliar para deletar do Cloudinary
+const deletarDoCloudinary = async (caminhoArquivo) => {
+  try {
+    if (!caminhoArquivo || !caminhoArquivo.includes('cloudinary')) {
+      return;
+    }
+
+    const match = caminhoArquivo.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+    if (match && match[1]) {
+      const publicId = match[1];
+      console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+    }
+  } catch (error) {
+    console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
+  }
+};
 
 const listarExames = async (req, res) => {
   try {
@@ -269,10 +297,25 @@ const deletarExame = async (req, res) => {
       return res.status(404).json({ error: 'Exame não encontrado' });
     }
 
+    // Buscar todos os anexos do exame para deletar do Cloudinary
+    const anexosResult = await db.query('SELECT * FROM exames_anexos WHERE exame_id = $1', [id]);
+    
+    // Deletar cada anexo do Cloudinary
+    for (const anexo of anexosResult.rows) {
+      await deletarDoCloudinary(anexo.caminho_arquivo);
+    }
+
+    // Deletar anexos do banco
+    await db.query('DELETE FROM exames_anexos WHERE exame_id = $1', [id]);
+    
+    // Deletar histórico de e-mails
     await db.query('DELETE FROM historico_emails WHERE exame_id = $1', [id]);
     
+    // Deletar exame
     const result = await db.query('DELETE FROM exames WHERE id = $1 RETURNING *', [id]);
 
+    console.log(`🗑️ Exame ${id} deletado com ${anexosResult.rows.length} anexo(s)`);
+    
     res.json({ mensagem: 'Exame deletado com sucesso' });
   } catch (error) {
     console.error('Erro ao deletar exame:', error);

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,8 +9,30 @@ const Login = () => {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
+  const [logo, setLogo] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Carregar logo do sistema
+  useEffect(() => {
+    const carregarLogo = async () => {
+      try {
+        const response = await api.get('/configuracoes');
+        if (response.data.logo) {
+          // Se for URL completa (Cloudinary), usar diretamente
+          if (response.data.logo.startsWith('http://') || response.data.logo.startsWith('https://')) {
+            setLogo(response.data.logo);
+          } else {
+            // Se for caminho relativo, construir URL completa
+            setLogo(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${response.data.logo}`);
+          }
+        }
+      } catch (error) {
+        console.log('Logo não disponível');
+      }
+    };
+    carregarLogo();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,10 +62,61 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>Central de Resultados</h2>
-        <p style={{ textAlign: 'center', marginBottom: '20px', color: '#7f8c8d' }}>
-          AST Assessoria
-        </p>
+        {/* Logo da Empresa - Destaque Profissional */}
+        {logo && (
+          <div style={{ 
+            textAlign: 'center', 
+            marginBottom: '35px',
+            paddingBottom: '25px',
+            borderBottom: '1px solid #e0e0e0'
+          }}>
+            <img 
+              src={logo} 
+              alt="Logo da Empresa" 
+              style={{ 
+                maxWidth: '250px',
+                maxHeight: '140px',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+              }} 
+            />
+          </div>
+        )}
+
+        {/* Mensagem de Boas-Vindas */}
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: '35px'
+        }}>
+          <h2 style={{ 
+            fontSize: '24px',
+            fontWeight: '600',
+            color: '#2c3e50',
+            marginBottom: '10px',
+            letterSpacing: '-0.5px'
+          }}>
+            Bem-vindo ao Sistema
+          </h2>
+          <h3 style={{ 
+            fontSize: '20px',
+            fontWeight: '500',
+            color: '#3498db',
+            marginBottom: '6px',
+            letterSpacing: '-0.3px'
+          }}>
+            Central de Resultados
+          </h3>
+          <p style={{ 
+            fontSize: '14px',
+            color: '#7f8c8d',
+            margin: 0,
+            fontWeight: '400'
+          }}>
+            AST Assessoria
+          </p>
+        </div>
 
         {erro && <div className="error-message">{erro}</div>}
 

@@ -6,9 +6,15 @@ import api from '../services/api';
 const HistoricoEmails = () => {
   const { usuario } = useAuth();
   const [emails, setEmails] = useState([]);
+  // Inicializar filtros com data atual
+  const getDataAtual = () => {
+    const hoje = new Date();
+    return hoje.toISOString().split('T')[0];
+  };
+
   const [filtros, setFiltros] = useState({
-    dataInicio: '',
-    dataFim: '',
+    dataInicio: getDataAtual(),
+    dataFim: getDataAtual(),
     destinatario: '',
     status: ''
   });
@@ -45,12 +51,48 @@ const HistoricoEmails = () => {
 
   const limparFiltros = () => {
     setFiltros({
-      dataInicio: '',
-      dataFim: '',
+      dataInicio: getDataAtual(),
+      dataFim: getDataAtual(),
       destinatario: '',
       status: ''
     });
     setTimeout(() => carregarEmails(), 100);
+  };
+
+  const exportarExcel = () => {
+    if (emails.length === 0) {
+      alert('Nenhum registro para exportar');
+      return;
+    }
+
+    // Preparar dados para Excel
+    const dados = emails.map(email => ({
+      'Data/Hora': new Date(email.data_envio).toLocaleString('pt-BR'),
+      'Destinatário': email.destinatario,
+      'Assunto': email.assunto,
+      'Status': email.status === 'enviado' ? 'Enviado' : 'Falhou',
+      'Funcionário': email.funcionario_nome || 'N/A',
+      'Erro': email.erro || ''
+    }));
+
+    // Converter para CSV
+    const headers = Object.keys(dados[0]).join(',');
+    const rows = dados.map(obj => Object.values(obj).map(val => 
+      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+    ).join(','));
+    
+    const csv = [headers, ...rows].join('\n');
+    
+    // Download
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `emails_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const imprimirEmails = () => {
+    window.print();
   };
 
   const reenviarEmail = async (emailId) => {
@@ -142,6 +184,22 @@ const HistoricoEmails = () => {
               </button>
               <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
                 🔄 Limpar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success" 
+                onClick={exportarExcel}
+                disabled={emails.length === 0}
+              >
+                📊 Exportar Excel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={imprimirEmails}
+                disabled={emails.length === 0}
+              >
+                🖨️ Imprimir
               </button>
             </div>
           </form>

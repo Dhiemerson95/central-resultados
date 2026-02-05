@@ -1,4 +1,40 @@
 const db = require('../database/db');
+const cloudinary = require('cloudinary').v2;
+
+// Configurar Cloudinary
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+// Função auxiliar para deletar do Cloudinary
+const deletarDoCloudinary = async (caminhoArquivo) => {
+  try {
+    // Se não for URL do Cloudinary, ignorar
+    if (!caminhoArquivo || !caminhoArquivo.includes('cloudinary')) {
+      console.log('📁 Arquivo não está no Cloudinary, pulando exclusão:', caminhoArquivo);
+      return;
+    }
+
+    // Extrair public_id da URL
+    // Exemplo: https://res.cloudinary.com/dmdmmphge/image/upload/v1234567/central-resultados/arquivo.pdf
+    // Public ID: central-resultados/arquivo
+    const match = caminhoArquivo.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+    if (match && match[1]) {
+      const publicId = match[1];
+      console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
+      
+      const resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      console.log('✅ Resultado da exclusão:', resultado);
+    }
+  } catch (error) {
+    console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
+    // Não falhar se não conseguir deletar do Cloudinary
+  }
+};
 
 const listarAnexosExame = async (req, res) => {
   try {
@@ -109,11 +145,20 @@ const deletarAnexoExame = async (req, res) => {
   try {
     const { anexo_id } = req.params;
 
-    const result = await db.query('DELETE FROM exames_anexos WHERE id = $1 RETURNING *', [anexo_id]);
-
-    if (result.rows.length === 0) {
+    // Buscar anexo antes de deletar para pegar o caminho do arquivo
+    const anexoResult = await db.query('SELECT * FROM exames_anexos WHERE id = $1', [anexo_id]);
+    
+    if (anexoResult.rows.length === 0) {
       return res.status(404).json({ error: 'Anexo não encontrado' });
     }
+
+    const anexo = anexoResult.rows[0];
+
+    // Deletar do Cloudinary (se for o caso)
+    await deletarDoCloudinary(anexo.caminho_arquivo);
+
+    // Deletar do banco de dados
+    await db.query('DELETE FROM exames_anexos WHERE id = $1', [anexo_id]);
 
     res.json({ mensagem: 'Anexo deletado com sucesso' });
   } catch (error) {
