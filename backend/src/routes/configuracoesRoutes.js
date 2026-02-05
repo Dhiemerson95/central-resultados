@@ -1,6 +1,6 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
-const upload = require('../middleware/uploadCloudinary');
+const upload = require('../middleware/upload');
 const {
   obterConfiguracoes,
   atualizarConfiguracoes,
