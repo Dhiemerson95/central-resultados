@@ -6,15 +6,10 @@ import api from '../services/api';
 const Logs = () => {
   const { usuario } = useAuth();
   const [logs, setLogs] = useState([]);
-  // Inicializar filtros com data atual
-  const getDataAtual = () => {
-    const hoje = new Date();
-    return hoje.toISOString().split('T')[0];
-  };
-
+  // Filtros iniciam vazios, mas backend aplica data atual automaticamente
   const [filtros, setFiltros] = useState({
-    dataInicio: getDataAtual(),
-    dataFim: getDataAtual(),
+    dataInicio: '',
+    dataFim: '',
     usuario: '',
     acao: ''
   });
@@ -51,8 +46,8 @@ const Logs = () => {
 
   const limparFiltros = () => {
     setFiltros({
-      dataInicio: getDataAtual(),
-      dataFim: getDataAtual(),
+      dataInicio: '',
+      dataFim: '',
       usuario: '',
       acao: ''
     });
@@ -182,11 +177,16 @@ const Logs = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary">
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px', 
+              alignItems: 'flex-end',
+              flexWrap: 'wrap'
+            }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '120px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '120px' }}>
                 🔄 Limpar
               </button>
               <button 
@@ -194,6 +194,7 @@ const Logs = () => {
                 className="btn btn-success" 
                 onClick={exportarExcel}
                 disabled={logs.length === 0}
+                style={{ minWidth: '150px' }}
               >
                 📊 Exportar Excel
               </button>
@@ -202,6 +203,7 @@ const Logs = () => {
                 className="btn btn-secondary" 
                 onClick={imprimirLogs}
                 disabled={logs.length === 0}
+                style={{ minWidth: '120px' }}
               >
                 🖨️ Imprimir
               </button>

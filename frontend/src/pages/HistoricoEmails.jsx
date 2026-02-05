@@ -6,15 +6,10 @@ import api from '../services/api';
 const HistoricoEmails = () => {
   const { usuario } = useAuth();
   const [emails, setEmails] = useState([]);
-  // Inicializar filtros com data atual
-  const getDataAtual = () => {
-    const hoje = new Date();
-    return hoje.toISOString().split('T')[0];
-  };
-
+  // Filtros iniciam vazios, mas backend aplica data atual automaticamente
   const [filtros, setFiltros] = useState({
-    dataInicio: getDataAtual(),
-    dataFim: getDataAtual(),
+    dataInicio: '',
+    dataFim: '',
     destinatario: '',
     status: ''
   });
@@ -51,8 +46,8 @@ const HistoricoEmails = () => {
 
   const limparFiltros = () => {
     setFiltros({
-      dataInicio: getDataAtual(),
-      dataFim: getDataAtual(),
+      dataInicio: '',
+      dataFim: '',
       destinatario: '',
       status: ''
     });
@@ -178,11 +173,16 @@ const HistoricoEmails = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary">
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px', 
+              alignItems: 'flex-end',
+              flexWrap: 'wrap'
+            }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '120px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '120px' }}>
                 🔄 Limpar
               </button>
               <button 
@@ -190,6 +190,7 @@ const HistoricoEmails = () => {
                 className="btn btn-success" 
                 onClick={exportarExcel}
                 disabled={emails.length === 0}
+                style={{ minWidth: '150px' }}
               >
                 📊 Exportar Excel
               </button>
@@ -198,6 +199,7 @@ const HistoricoEmails = () => {
                 className="btn btn-secondary" 
                 onClick={imprimirEmails}
                 disabled={emails.length === 0}
+                style={{ minWidth: '120px' }}
               >
                 🖨️ Imprimir
               </button>

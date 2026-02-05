@@ -19,11 +19,13 @@ const deletarDoCloudinary = async (caminhoArquivo) => {
       return;
     }
 
-    const match = caminhoArquivo.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+    // Extrair public_id da URL (SEM extensão)
+    const match = caminhoArquivo.match(/\/v\d+\/(.+)\.\w+$/);
     if (match && match[1]) {
       const publicId = match[1];
       console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
-      await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      const resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      console.log('✅ Resultado Cloudinary:', JSON.stringify(resultado, null, 2));
     }
   } catch (error) {
     console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
@@ -67,10 +69,14 @@ const listarExames = async (req, res) => {
       paramCount++;
     }
 
+    // Se nenhum filtro de data/busca: usar data atual (horário de Brasília)
     if (!data_inicio && !data_fim && !busca) {
-      const hoje = new Date().toISOString().split('T')[0];
+      const hoje = new Date();
+      // Ajustar para fuso horário de Brasília (UTC-3)
+      hoje.setHours(hoje.getHours() - 3);
+      const dataLocal = hoje.toISOString().split('T')[0];
       query += ` AND DATE(e.data_atendimento) = $${paramCount}`;
-      params.push(hoje);
+      params.push(dataLocal);
       paramCount++;
     }
 

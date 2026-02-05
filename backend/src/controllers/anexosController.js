@@ -21,17 +21,27 @@ const deletarDoCloudinary = async (caminhoArquivo) => {
 
     // Extrair public_id da URL
     // Exemplo: https://res.cloudinary.com/dmdmmphge/image/upload/v1234567/central-resultados/arquivo.pdf
-    // Public ID: central-resultados/arquivo
-    const match = caminhoArquivo.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+    // Public ID: central-resultados/arquivo (SEM extensão)
+    const match = caminhoArquivo.match(/\/v\d+\/(.+)\.\w+$/);
     if (match && match[1]) {
       const publicId = match[1];
       console.log('🗑️ Deletando do Cloudinary - Public ID:', publicId);
+      console.log('🗑️ Caminho completo:', caminhoArquivo);
       
       const resultado = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      console.log('✅ Resultado da exclusão:', resultado);
+      console.log('✅ Resultado da exclusão do Cloudinary:', JSON.stringify(resultado, null, 2));
+      
+      if (resultado.result === 'ok') {
+        console.log('✅ Arquivo deletado com sucesso do Cloudinary!');
+      } else {
+        console.warn('⚠️ Cloudinary retornou:', resultado.result);
+      }
+    } else {
+      console.warn('⚠️ Não foi possível extrair public_id de:', caminhoArquivo);
     }
   } catch (error) {
     console.error('⚠️ Erro ao deletar do Cloudinary:', error.message);
+    console.error('⚠️ Stack:', error.stack);
     // Não falhar se não conseguir deletar do Cloudinary
   }
 };

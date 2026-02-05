@@ -313,6 +313,25 @@ const executarMigrations = async () => {
       CREATE INDEX IF NOT EXISTS idx_logs_data ON logs_atividades(data_hora DESC);
     `);
 
+    console.log('📋 Criando tabela emails_enviados...');
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS emails_enviados (
+        id SERIAL PRIMARY KEY,
+        exame_id INTEGER REFERENCES exames(id) ON DELETE SET NULL,
+        destinatario VARCHAR(255) NOT NULL,
+        assunto VARCHAR(500),
+        corpo TEXT,
+        status VARCHAR(50) DEFAULT 'enviado',
+        erro TEXT,
+        data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_emails_data ON emails_enviados(data_envio DESC);
+      CREATE INDEX IF NOT EXISTS idx_emails_status ON emails_enviados(status);
+    `);
+
     console.log('📋 Adicionando colunas de auditoria em exames_anexos...');
     await db.query(`
       DO $$ 
