@@ -21,11 +21,21 @@ const Exames = () => {
   const [showAnexosModal, setShowAnexosModal] = useState(false);
   const [exameIdAnexos, setExameIdAnexos] = useState(null);
 
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
     empresa_id: '',
     clinica_id: '',
-    data_inicio: '',
-    data_fim: '',
+    data_inicio: getDataAtual(),
+    data_fim: getDataAtual(),
     tipo_exame: '',
     status: '',
     enviado_cliente: '',
@@ -376,8 +386,16 @@ const Exames = () => {
       return;
     }
 
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const url = `${baseURL}/uploads/${exame.arquivo_laudo}`;
+    // Se for URL completa (Cloudinary), usar diretamente
+    let url;
+    if (exame.arquivo_laudo.startsWith('http://') || exame.arquivo_laudo.startsWith('https://')) {
+      url = exame.arquivo_laudo;
+    } else {
+      // Se for caminho relativo, construir URL completa
+      const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      url = `${baseURL}/uploads/${exame.arquivo_laudo}`;
+    }
+    
     setLaudoUrl(url);
     setShowLaudoModal(true);
   };

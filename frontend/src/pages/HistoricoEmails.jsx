@@ -5,10 +5,20 @@ import api from '../services/api';
 
 const HistoricoEmails = () => {
   const { usuario } = useAuth();
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
   const [emails, setEmails] = useState([]);
+  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
-    dataInicio: '',
-    dataFim: '',
+    dataInicio: getDataAtual(),
+    dataFim: getDataAtual(),
     destinatario: '',
     status: ''
   });
@@ -53,6 +63,42 @@ const HistoricoEmails = () => {
     setTimeout(() => carregarEmails(), 100);
   };
 
+  const exportarExcel = () => {
+    if (emails.length === 0) {
+      alert('Nenhum registro para exportar');
+      return;
+    }
+
+    // Preparar dados para Excel
+    const dados = emails.map(email => ({
+      'Data/Hora': new Date(email.data_envio).toLocaleString('pt-BR'),
+      'Destinatário': email.destinatario,
+      'Assunto': email.assunto,
+      'Status': email.status === 'enviado' ? 'Enviado' : 'Falhou',
+      'Funcionário': email.funcionario_nome || 'N/A',
+      'Erro': email.erro || ''
+    }));
+
+    // Converter para CSV
+    const headers = Object.keys(dados[0]).join(',');
+    const rows = dados.map(obj => Object.values(obj).map(val => 
+      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+    ).join(','));
+    
+    const csv = [headers, ...rows].join('\n');
+    
+    // Download
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `emails_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const imprimirEmails = () => {
+    window.print();
+  };
+
   const reenviarEmail = async (emailId) => {
     if (!confirm('Deseja reenviar este e-mail?')) return;
 
@@ -91,7 +137,7 @@ const HistoricoEmails = () => {
           </p>
 
           <form onSubmit={handleFiltrar} className="filters">
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '140px' }}>
               <label>Data Início</label>
               <input
                 type="date"
@@ -101,7 +147,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '140px' }}>
               <label>Data Fim</label>
               <input
                 type="date"
@@ -111,7 +157,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
               <label>Destinatário</label>
               <input
                 type="text"
@@ -122,7 +168,7 @@ const HistoricoEmails = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: '130px' }}>
               <label>Status</label>
               <select
                 className="form-control"
@@ -136,12 +182,35 @@ const HistoricoEmails = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary">
+            <div style={{ 
+              display: 'flex', 
+              gap: '8px', 
+              alignItems: 'flex-end',
+              flexWrap: 'nowrap'
+            }}>
+              <button type="submit" className="btn btn-primary" style={{ minWidth: '90px', padding: '8px 12px' }}>
                 🔍 Filtrar
               </button>
-              <button type="button" className="btn btn-secondary" onClick={limparFiltros}>
+              <button type="button" className="btn btn-secondary" onClick={limparFiltros} style={{ minWidth: '90px', padding: '8px 12px' }}>
                 🔄 Limpar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success" 
+                onClick={exportarExcel}
+                disabled={emails.length === 0}
+                style={{ minWidth: '100px', padding: '8px 12px' }}
+              >
+                📊 Excel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={imprimirEmails}
+                disabled={emails.length === 0}
+                style={{ minWidth: '100px', padding: '8px 12px' }}
+              >
+                🖨️ Imprimir
               </button>
             </div>
           </form>
