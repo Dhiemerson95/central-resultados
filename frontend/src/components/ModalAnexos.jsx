@@ -84,34 +84,29 @@ export default function ModalAnexos({ exameId, onClose }) {
   };
 
   const handleVisualizar = (anexo) => {
+    // Se for URL completa (Cloudinary), usar diretamente
     let url;
-    
-    // Se for URL completa do Cloudinary, usar diretamente
     if (anexo.caminho_arquivo.startsWith('http://') || anexo.caminho_arquivo.startsWith('https://')) {
       url = anexo.caminho_arquivo;
     } else {
-      // Caminho relativo local - construir URL
+      // Se for caminho relativo, construir URL completa
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       url = `${baseUrl}/uploads/${anexo.caminho_arquivo}`;
     }
-    
-    console.log('📄 Visualizar Anexo - URL final:', url);
+    console.log('📄 Abrindo PDF:', url);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleBaixar = (anexo) => {
+    // Se for URL completa (Cloudinary), usar diretamente
     let url;
-    
-    // Se for URL completa do Cloudinary, usar diretamente
     if (anexo.caminho_arquivo.startsWith('http://') || anexo.caminho_arquivo.startsWith('https://')) {
       url = anexo.caminho_arquivo;
     } else {
-      // Caminho relativo local - construir URL
+      // Se for caminho relativo, construir URL completa
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       url = `${baseUrl}/uploads/${anexo.caminho_arquivo}`;
     }
-    
-    console.log('⬇️ Baixar Anexo - URL final:', url);
     const a = document.createElement('a');
     a.href = url;
     a.download = anexo.nome_arquivo;

@@ -21,11 +21,21 @@ const Exames = () => {
   const [showAnexosModal, setShowAnexosModal] = useState(false);
   const [exameIdAnexos, setExameIdAnexos] = useState(null);
 
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  // Filtros iniciam com data atual preenchida
   const [filtros, setFiltros] = useState({
     empresa_id: '',
     clinica_id: '',
-    data_inicio: '',
-    data_fim: '',
+    data_inicio: getDataAtual(),
+    data_fim: getDataAtual(),
     tipo_exame: '',
     status: '',
     enviado_cliente: '',
@@ -376,18 +386,16 @@ const Exames = () => {
       return;
     }
 
+    // Se for URL completa (Cloudinary), usar diretamente
     let url;
-    
-    // Se for URL completa do Cloudinary, usar diretamente
     if (exame.arquivo_laudo.startsWith('http://') || exame.arquivo_laudo.startsWith('https://')) {
       url = exame.arquivo_laudo;
     } else {
-      // Caminho relativo local - construir URL
+      // Se for caminho relativo, construir URL completa
       const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       url = `${baseURL}/uploads/${exame.arquivo_laudo}`;
     }
     
-    console.log('📄 Visualizar Laudo - URL final:', url);
     setLaudoUrl(url);
     setShowLaudoModal(true);
   };
@@ -428,7 +436,14 @@ const Exames = () => {
               <button className="btn btn-info" onClick={exportarParaExcel}>
                 📊 Exportar Excel
               </button>
-              <ImprimirRelatorio dados={exames} tipo="exames" />
+              <ImprimirRelatorio 
+                dados={exames} 
+                tipo="exames" 
+                filtros={{
+                  dataInicio: filtros.data_inicio,
+                  dataFim: filtros.data_fim
+                }}
+              />
               <button className="btn btn-success" onClick={() => abrirModal()}>
                 + Novo Exame
               </button>
