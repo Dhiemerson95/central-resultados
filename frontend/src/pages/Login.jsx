@@ -17,31 +17,21 @@ const Login = () => {
   useEffect(() => {
     const carregarLogo = async () => {
       try {
-        console.log('🔍 Tentando carregar logo do sistema...');
-        
         const response = await api.get('/configuracoes');
         
-        console.log('✅ Configurações carregadas:', response.data);
-        
-        if (response.data.logo) {
-          console.log('📸 Logo encontrada:', response.data.logo);
-          
+        if (response.data && response.data.logo) {
           // Se for URL completa (Cloudinary), usar diretamente
           if (response.data.logo.startsWith('http://') || response.data.logo.startsWith('https://')) {
             setLogo(response.data.logo);
-            console.log('✅ Logo URL completa:', response.data.logo);
           } else {
             // Se for caminho relativo, construir URL completa
-            const logoUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${response.data.logo}`;
-            setLogo(logoUrl);
-            console.log('✅ Logo URL construída:', logoUrl);
+            const baseURL = import.meta.env.VITE_API_URL || 'https://central-resultados-production.up.railway.app';
+            setLogo(`${baseURL}${response.data.logo}`);
           }
-        } else {
-          console.log('⚠️ Nenhuma logo configurada no sistema');
         }
       } catch (error) {
-        console.error('❌ Erro ao carregar logo:', error.message);
-        console.error('   Detalhes:', error.response?.data || error);
+        console.error('Erro ao carregar logo:', error);
+        // Ignorar erro - logo é opcional
       }
     };
     carregarLogo();
