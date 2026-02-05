@@ -13,35 +13,30 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Carregar logo do sistema
+  // Carregar logo do sistema (com timeout para não atrasar login)
   useEffect(() => {
     const carregarLogo = async () => {
       try {
-        console.log('🔍 Tentando carregar logo do sistema...');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundos max
+
+        const response = await api.get('/configuracoes', { 
+          signal: controller.signal 
+        });
         
-        const response = await api.get('/configuracoes');
-        
-        console.log('✅ Configurações carregadas:', response.data);
-        
+        clearTimeout(timeoutId);
+
         if (response.data.logo) {
-          console.log('📸 Logo encontrada:', response.data.logo);
-          
           // Se for URL completa (Cloudinary), usar diretamente
           if (response.data.logo.startsWith('http://') || response.data.logo.startsWith('https://')) {
             setLogo(response.data.logo);
-            console.log('✅ Logo URL completa:', response.data.logo);
           } else {
             // Se for caminho relativo, construir URL completa
-            const logoUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${response.data.logo}`;
-            setLogo(logoUrl);
-            console.log('✅ Logo URL construída:', logoUrl);
+            setLogo(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${response.data.logo}`);
           }
-        } else {
-          console.log('⚠️ Nenhuma logo configurada no sistema');
         }
       } catch (error) {
-        console.error('❌ Erro ao carregar logo:', error.message);
-        console.error('   Detalhes:', error.response?.data || error);
+        // Silenciar erro - logo é opcional
       }
     };
     carregarLogo();
